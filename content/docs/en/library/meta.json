@@ -1,0 +1,13 @@
+{
+  "title": "Library",
+  "description": "The library of Commet",
+  "icon": "Library",
+  "root": true,
+  "pages": [
+    "quickstart",
+    "features",
+    "installation",
+    "core-concepts",
+    "reference"
+  ]
+}

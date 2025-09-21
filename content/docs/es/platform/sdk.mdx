@@ -1,0 +1,284 @@
+---
+title: SDK de Commet
+description: El SDK de TypeScript para integración de facturación de clase mundial
+---
+
+# SDK de Commet
+
+El SDK oficial de TypeScript para Commet Billing. Construido para la mejor experiencia de desarrollador con IntelliSense perfecto de TypeScript, reintentos automáticos y logging en modo desarrollo.
+
+## Inicio Rápido
+
+Instala el SDK en tu proyecto:
+
+```bash
+npm install @commet/sdk
+# o
+pnpm add @commet/sdk
+# o  
+yarn add @commet/sdk
+```
+
+Inicializa el cliente con tu API key:
+
+```typescript
+import { Commet } from '@commet/sdk';
+
+const commet = new Commet({
+  apiKey: 'tu-api-key-aqui'
+});
+```
+
+## Características Principales
+
+<Cards>
+  <Card title="Eventos de Uso" href="#eventos-de-uso">
+    Rastrea métricas de uso con agrupación automática y logging en modo desarrollo
+  </Card>
+  <Card title="Gestión de Asientos" href="#gestion-de-asientos">
+    Gestiona asientos de usuario con operaciones intuitivas add/remove/set
+  </Card>
+  <Card title="Operaciones de Cliente" href="#operaciones-de-cliente">
+    Crea y gestiona clientes con operaciones CRUD completas
+  </Card>
+  <Card title="TypeScript Perfecto" href="#experiencia-typescript">
+    Seguridad de tipos completa con IntelliSense para todas las operaciones
+  </Card>
+</Cards>
+
+## Eventos de Uso
+
+La característica más utilizada. Rastrea métricas de uso para tu facturación:
+
+```typescript
+// Evento de uso único
+await commet.usage.create({
+  customerId: 'cus_1234567890abcdef',
+  eventType: 'api_call',
+  quantity: 1,
+  timestamp: new Date()
+});
+
+// Agrupa múltiples eventos (recomendado para alto volumen)
+await commet.usage.createBatch([
+  {
+    customerId: 'cus_1234567890abcdef',
+    eventType: 'api_call',
+    quantity: 10,
+    timestamp: new Date()
+  },
+  {
+    customerId: 'cus_1234567890abcdef', 
+    eventType: 'storage_gb',
+    quantity: 5.2,
+    timestamp: new Date()
+  }
+]);
+```
+
+### Logging en Modo Desarrollo
+
+En desarrollo, el SDK automáticamente registra eventos en consola sin enviarlos:
+
+```bash
+[Commet SDK] Dev mode: usage.create
+{
+  customerId: "cus_1234567890abcdef",
+  eventType: "api_call", 
+  quantity: 1,
+  timestamp: "2024-01-15T10:30:00.000Z"
+}
+```
+
+## Gestión de Asientos
+
+Gestiona asientos de usuario con métodos simples e intuitivos:
+
+```typescript
+// Agregar asientos
+await commet.seats.add({
+  customerId: 'cus_1234567890abcdef',
+  seatType: 'admin',
+  quantity: 5
+});
+
+// Remover asientos específicos
+await commet.seats.remove({
+  customerId: 'cus_1234567890abcdef',
+  seatType: 'admin', 
+  quantity: 2
+});
+
+// Establecer cantidad exacta de asientos
+await commet.seats.set({
+  customerId: 'cus_1234567890abcdef',
+  seatType: 'viewer',
+  quantity: 10
+});
+
+// Obtener balance actual de asientos
+const balance = await commet.seats.getBalance('cus_1234567890abcdef');
+console.log(balance); // { admin: 3, viewer: 10 }
+```
+
+## Operaciones de Cliente
+
+Operaciones CRUD completas para gestión de clientes:
+
+```typescript
+// Crear cliente
+const customer = await commet.customers.create({
+  name: 'Acme Corporation',
+  email: 'billing@acme.com',
+  currency: 'USD',
+  taxStatus: 'TAXED'
+});
+
+// Obtener cliente
+const customer = await commet.customers.get('cus_1234567890abcdef');
+
+// Actualizar cliente
+await commet.customers.update('cus_1234567890abcdef', {
+  name: 'Acme Corp (Actualizado)'
+});
+
+// Listar clientes con paginación
+const customers = await commet.customers.list({
+  page: 1,
+  limit: 10,
+  search: 'acme'
+});
+```
+
+## Manejo de Errores
+
+El SDK incluye lógica de reintentos automática y manejo comprensivo de errores:
+
+```typescript
+try {
+  await commet.usage.create({
+    customerId: 'cus_1234567890abcdef',
+    eventType: 'api_call',
+    quantity: 1
+  });
+} catch (error) {
+  if (error instanceof CommetAPIError) {
+    console.log('Error de API:', error.message);
+    console.log('Estado:', error.status);
+    console.log('Código:', error.code);
+  }
+}
+```
+
+### Reintentos Automáticos
+
+El SDK automáticamente reintenta peticiones fallidas con backoff exponencial:
+
+- **Cantidad de Reintentos**: Hasta 3 intentos
+- **Backoff**: Exponencial (1s, 2s, 4s)
+- **Errores Reintentables**: Errores de red, respuestas 5xx, límites de tasa
+
+## Experiencia TypeScript
+
+IntelliSense perfecto y seguridad de tipos desde el inicio:
+
+```typescript
+// Autocompletado completo para tipos de eventos
+await commet.usage.create({
+  eventType: 'api_call', // ← IntelliSense sugiere todos los tipos válidos
+  // ...
+});
+
+// Respuestas type-safe
+const customer = await commet.customers.get('cus_123');
+customer.name; // ← Completamente tipado, sin tipos 'any'
+```
+
+## Configuración
+
+### Detección de Entorno
+
+El SDK automáticamente detecta tu entorno:
+
+- **Desarrollo**: Registra en consola, sin llamadas a API
+- **Producción**: Comportamiento normal de API
+- **Test**: Comportamiento configurable
+
+### Configuración Manual
+
+```typescript
+const commet = new Commet({
+  apiKey: 'tu-api-key',
+  // Forzar modo desarrollo (opcional)
+  devMode: true,
+  // Configuración personalizada de reintentos (opcional)
+  retries: 3,
+  retryDelay: 1000
+});
+```
+
+## Mejores Prácticas
+
+<Steps>
+
+### Usa Operaciones por Lotes
+
+Para eventos de uso de alto volumen, siempre usa operaciones por lotes:
+
+```typescript
+// ✅ Bueno - agrupa múltiples eventos
+await commet.usage.createBatch(events);
+
+// ❌ Evita - llamadas individuales en bucles
+for (const event of events) {
+  await commet.usage.create(event); // No hagas esto
+}
+```
+
+### Maneja Errores Graciosamente
+
+Siempre envuelve las llamadas del SDK en bloques try-catch:
+
+```typescript
+try {
+  await commet.usage.create(event);
+} catch (error) {
+  // Registra error y continúa
+  console.error('Falló al rastrear uso:', error);
+}
+```
+
+### Usa TypeScript
+
+El SDK está construido para TypeScript. Úsalo para la mejor experiencia:
+
+```typescript
+// Seguridad de tipos completa
+interface MyUsageEvent {
+  customerId: string;
+  eventType: 'api_call' | 'storage_gb';
+  quantity: number;
+}
+
+const event: MyUsageEvent = {
+  customerId: 'cus_123',
+  eventType: 'api_call', // ← Autocompletado
+  quantity: 1
+};
+```
+
+</Steps>
+
+## Próximos Pasos
+
+<Cards>
+  <Card title="Referencia de API" href="/api">
+    Documentación completa de API para todos los métodos del SDK
+  </Card>
+  <Card title="Uso Avanzado" href="/advanced">
+    Patrones avanzados, webhooks e integraciones
+  </Card>
+  <Card title="Guía de Migración" href="/migration">
+    Migrando desde otros SDKs de facturación
+  </Card>
+</Cards>

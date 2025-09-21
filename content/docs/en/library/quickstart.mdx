@@ -1,0 +1,135 @@
+---
+title: Quick Start
+description: Get started with Commet SDK in under 5 minutes
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Quick Start
+
+Get your billing system up and running in under 5 minutes.
+
+<Callout type="info">
+**Prerequisites:** You'll need a Commet account and API key. [Sign up here](https://demo.commet.co) if you don't have one.
+</Callout>
+
+<Steps>
+<Step>
+
+## Install the SDK
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+<Tab value="npm">
+```bash
+npm install @commet/sdk
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add @commet/sdk
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @commet/sdk
+```
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+## Initialize the client
+
+Create your Commet client with your API key:
+
+```typescript
+import { Commet } from '@commet/sdk'
+
+const commet = new Commet({
+  apiKey: 'your-api-key',
+  // Dev mode automatically enabled in development
+})
+```
+
+<Callout type="warn">
+**Keep your API key secure:** Never expose your API key in client-side code. Use environment variables.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Send your first usage event
+
+Track usage for billing in one line:
+
+```typescript
+// Track API calls for usage-based billing
+await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  timestamp: new Date().toISOString(),
+})
+```
+
+</Step>
+
+<Step>
+
+## Manage seat licenses
+
+Add or remove seats for subscription billing:
+
+```typescript
+// Add 5 admin seats
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 5,
+})
+
+// Remove 2 seats
+await commet.seats.remove({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', 
+  seatType: 'admin',
+  quantity: 2,
+})
+```
+
+</Step>
+</Steps>
+
+## What's next?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Framework Guides</h3>
+    <p className="text-sm text-muted-foreground mb-3">Detailed setup for your stack</p>
+    <ul className="text-sm space-y-1">
+      <li>[Next.js Guide](/quickstart/nextjs)</li>
+      <li>[Node.js Guide](/quickstart/nodejs)</li>
+      <li>[Express Guide](/quickstart/express)</li>
+    </ul>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Core Features</h3>
+    <p className="text-sm text-muted-foreground">Master the essentials</p>
+    <ul className="text-sm space-y-1">
+      <li>[Usage Events](/features/usage-events)</li>
+      <li>[Seat Management](/features/seat-management)</li>
+      <li>[Customer Operations](/features/customers)</li>
+    </ul>
+  </div>
+</div>
+
+## Need help?
+
+- 📖 [Complete API Reference](/api-reference)
+- 💬 [Join our Discord](https://discord.gg/commet)
+- 📧 [Contact Support](mailto:support@commet.co)

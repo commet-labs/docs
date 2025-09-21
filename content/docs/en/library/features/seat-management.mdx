@@ -1,0 +1,324 @@
+---
+title: Seat Management
+description: Handle subscription-based billing with intuitive seat operations
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Seat Management
+
+Manage customer seats for subscription billing. Add, remove, or set seat quantities with automatic audit trails.
+
+<Callout type="info">
+**Prerequisites:** Customer must exist and have active seat types configured.
+</Callout>
+
+## Basic Operations
+
+### Add Seats
+
+Increase seat count for a customer:
+
+```typescript
+const result = await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 5
+})
+
+console.log(`Added ${result.data.quantity} admin seats`)
+```
+
+### Remove Seats
+
+Decrease seat count:
+
+```typescript
+const result = await commet.seats.remove({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 2
+})
+
+console.log(`Removed ${result.data.quantity} admin seats`)
+```
+
+### Set Exact Count
+
+Set precise seat quantity:
+
+```typescript
+const result = await commet.seats.set({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 10
+})
+
+console.log(`Set admin seats to ${result.data.quantity}`)
+```
+
+## Seat Types
+
+Common seat configurations:
+
+<Tabs items={['Admin/User', 'Tiered Plans', 'Role-Based', 'Custom']}>
+<Tab value="Admin/User">
+```typescript
+// Administrative seats
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 2
+})
+
+// Regular user seats  
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'user',
+  quantity: 25
+})
+```
+</Tab>
+<Tab value="Tiered Plans">
+```typescript
+// Starter plan seats
+await commet.seats.set({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'starter',
+  quantity: 5
+})
+
+// Pro plan seats
+await commet.seats.set({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', 
+  seatType: 'pro',
+  quantity: 15
+})
+```
+</Tab>
+<Tab value="Role-Based">
+```typescript
+// Developer seats
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'developer',
+  quantity: 8
+})
+
+// Viewer seats (read-only)
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'viewer', 
+  quantity: 20
+})
+```
+</Tab>
+<Tab value="Custom">
+```typescript
+// Custom seat type with metadata
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'api_access',
+  quantity: 3,
+  metadata: {
+    rate_limit: '1000_per_hour',
+    features: ['analytics', 'webhooks']
+  }
+})
+```
+</Tab>
+</Tabs>
+
+## Bulk Operations
+
+Update multiple seat types simultaneously:
+
+```typescript
+const updates = [
+  { seatType: 'admin', quantity: 3 },
+  { seatType: 'user', quantity: 50 },
+  { seatType: 'viewer', quantity: 100 }
+]
+
+const result = await commet.seats.bulkUpdate({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  updates
+})
+
+console.log(`Updated ${result.data.length} seat types`)
+```
+
+## Seat Balances
+
+Get current seat counts:
+
+```typescript
+const balance = await commet.seats.getBalance({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2'
+})
+
+console.log('Current seats:', balance.data)
+// Output: { admin: 3, user: 50, viewer: 100 }
+```
+
+Get specific seat type balance:
+
+```typescript
+const adminSeats = await commet.seats.getBalance({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin'
+})
+
+console.log(`Admin seats: ${adminSeats.data.admin}`)
+```
+
+## Seat History
+
+Track seat changes over time:
+
+```typescript
+const history = await commet.seats.getHistory({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  startDate: '2024-01-01',
+  endDate: '2024-01-31'
+})
+
+history.data.forEach(event => {
+  console.log(`${event.timestamp}: ${event.action} ${event.quantity} seats`)
+})
+```
+
+## Advanced Options
+
+### Effective Date
+
+Schedule seat changes for future billing periods:
+
+```typescript
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 5,
+  effectiveDate: '2024-02-01T00:00:00Z'
+})
+```
+
+### Proration Control
+
+Control mid-cycle billing behavior:
+
+```typescript
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 5,
+  proration: 'full_cycle' // or 'daily', 'none'
+})
+```
+
+### Metadata Tracking
+
+Add context to seat changes:
+
+```typescript
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 5,
+  metadata: {
+    department: 'engineering',
+    approved_by: 'usr_manager123',
+    reason: 'team_expansion'
+  }
+})
+```
+
+## Error Handling
+
+Handle common scenarios:
+
+```typescript
+try {
+  await commet.seats.remove({
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    seatType: 'admin',
+    quantity: 10
+  })
+} catch (error) {
+  if (error.code === 'INSUFFICIENT_SEATS') {
+    console.log('Cannot remove more seats than available')
+  } else if (error.code === 'SEAT_TYPE_NOT_FOUND') {
+    console.log('Seat type not configured for customer')
+  } else {
+    console.log('Unexpected error:', error.message)
+  }
+}
+```
+
+## Best Practices
+
+### Seat Naming
+
+Use descriptive, consistent seat type names:
+
+```typescript
+// ✅ Good
+'admin', 'user', 'viewer', 'developer', 'analyst'
+
+// ❌ Avoid
+'type1', 'seat', 'license', 'user_thing'
+```
+
+### Batch Operations
+
+For multiple seat updates, use bulk operations:
+
+```typescript
+// ✅ Efficient - single API call
+await commet.seats.bulkUpdate({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  updates: [
+    { seatType: 'admin', quantity: 3 },
+    { seatType: 'user', quantity: 50 }
+  ]
+})
+
+// ❌ Inefficient - multiple API calls
+await commet.seats.set({ customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', seatType: 'admin', quantity: 3 })
+await commet.seats.set({ customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', seatType: 'user', quantity: 50 })
+```
+
+### Audit Trail
+
+Always include meaningful metadata:
+
+```typescript
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'developer',
+  quantity: 3,
+  metadata: {
+    requested_by: 'usr_manager123',
+    department: 'engineering',
+    project: 'mobile_app_v2'
+  }
+})
+```
+
+## What's next?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Usage Events</h3>
+    <p className="text-sm text-muted-foreground">Track usage-based billing</p>
+    <p className="text-sm">[Track usage →](/library/features/usage-events)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Customer Operations</h3>
+    <p className="text-sm text-muted-foreground">Manage customer data</p>
+    <p className="text-sm">[Manage customers →](/library/features/customers)</p>
+  </div>
+</div>
