@@ -123,7 +123,7 @@ COMMET_DEBUG=true
 ```
 
 ```typescript title="lib/commet.ts"
-import { Commet } from '@commet/sdk'
+import { Commet } from 'commet'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
@@ -180,7 +180,7 @@ Configure for different deployment environments:
 <Tabs items={['Development', 'Preview', 'Production']}>
 <Tab value="Development">
 ```typescript title="lib/commet.ts"
-import { Commet } from '@commet/sdk'
+import { Commet } from 'commet'
 
 const isDev = process.env.NODE_ENV === 'development'
 

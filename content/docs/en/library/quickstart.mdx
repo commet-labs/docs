@@ -23,17 +23,17 @@ Get your billing system up and running in under 5 minutes.
 <Tabs items={['npm', 'pnpm', 'yarn']}>
 <Tab value="npm">
 ```bash
-npm install @commet/sdk
+npm install commet
 ```
 </Tab>
 <Tab value="pnpm">
 ```bash
-pnpm add @commet/sdk
+pnpm add commet
 ```
 </Tab>
 <Tab value="yarn">
 ```bash
-yarn add @commet/sdk
+yarn add commet
 ```
 </Tab>
 </Tabs>
@@ -47,7 +47,7 @@ yarn add @commet/sdk
 Create your Commet client with your API key:
 
 ```typescript
-import { Commet } from '@commet/sdk'
+import { Commet } from 'commet'
 
 const commet = new Commet({
   apiKey: 'your-api-key',

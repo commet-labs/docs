@@ -23,17 +23,17 @@ Complete guide for integrating Commet SDK with Next.js applications.
 <Tabs items={['npm', 'pnpm', 'yarn']}>
 <Tab value="npm">
 ```bash
-npm install @commet/sdk
+npm install commet
 ```
 </Tab>
 <Tab value="pnpm">
 ```bash
-pnpm add @commet/sdk
+pnpm add commet
 ```
 </Tab>
 <Tab value="yarn">
 ```bash
-yarn add @commet/sdk
+yarn add commet
 ```
 </Tab>
 </Tabs>
@@ -65,7 +65,7 @@ Create a server-side client instance:
 <Tabs items={['App Router', 'Pages Router']}>
 <Tab value="App Router">
 ```typescript title="lib/commet.ts"
-import { Commet } from '@commet/sdk'
+import { Commet } from 'commet'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
@@ -74,7 +74,7 @@ export const commet = new Commet({
 </Tab>
 <Tab value="Pages Router">
 ```typescript title="lib/commet.ts"
-import { Commet } from '@commet/sdk'
+import { Commet } from 'commet'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,

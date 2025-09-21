@@ -19,7 +19,7 @@ The SDK provides specific error classes for different scenarios:
 Base error class for all SDK errors:
 
 ```typescript
-import { CommetError } from '@commet/sdk'
+import { CommetError } from 'commet'
 
 try {
   await commet.customers.create(invalidData)
@@ -37,7 +37,7 @@ try {
 API-specific errors with HTTP status codes:
 
 ```typescript
-import { CommetAPIError } from '@commet/sdk'
+import { CommetAPIError } from 'commet'
 
 try {
   await commet.customers.retrieve('invalid_id')
@@ -56,7 +56,7 @@ try {
 Validation errors with field-specific details:
 
 ```typescript
-import { CommetValidationError } from '@commet/sdk'
+import { CommetValidationError } from 'commet'
 
 try {
   await commet.customers.create({
@@ -238,7 +238,7 @@ const commet = new Commet({
 Handle all error types systematically:
 
 ```typescript
-import { CommetError, CommetAPIError, CommetValidationError } from '@commet/sdk'
+import { CommetError, CommetAPIError, CommetValidationError } from 'commet'
 
 async function createCustomerSafely(customerData) {
   try {
