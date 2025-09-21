@@ -1,0 +1,226 @@
+---
+title: Authentication
+description: Secure API key authentication with automatic environment detection
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Authentication
+
+Commet SDK uses API key authentication with automatic environment detection and validation.
+
+## API Key Format
+
+Commet API keys follow a predictable format for easy identification:
+
+```
+ck_xxx1234567890abcdef...  // Production API keys
+```
+
+<Callout type="warn">
+**Security:** Never expose API keys in client-side code. Always use server-side routes or environment variables.
+</Callout>
+
+## Initialize Client
+
+Configure your Commet client with your API key:
+
+<Tabs items={['Basic Setup', 'With Options', 'Environment Variables']}>
+<Tab value="Basic Setup">
+```typescript
+import { Commet } from '@commet/sdk'
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+</Tab>
+<Tab value="With Options">
+```typescript
+import { Commet } from '@commet/sdk'
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'production',  // or 'development', 'auto'
+  debug: true,
+  timeout: 30000,
+  retries: 3
+})
+```
+</Tab>
+<Tab value="Environment Variables">
+```bash title=".env.local"
+COMMET_API_KEY=ck_xxx1234567890abcdef...
+```
+
+```typescript title="lib/commet.ts"
+import { Commet } from '@commet/sdk'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+</Tab>
+</Tabs>
+
+## Environment Detection
+
+The SDK automatically detects your environment:
+
+### Automatic Detection
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'auto', // Default behavior
+})
+
+console.log(commet.getEnvironment()) // 'development' or 'production'
+```
+
+### Detection Rules
+
+The SDK detects development environment when:
+
+- `NODE_ENV` is `development` or `test`
+- Running on `localhost`, `127.0.0.1`, or local networks
+- Hostname ends with `.local`
+
+All other cases default to production mode.
+
+## Configuration Options
+
+Complete configuration reference:
+
+```typescript
+interface CommetConfig {
+  apiKey: string             // Required: Your API key
+  environment?: 'auto' | Environment // Auto-detect or explicit
+  debug?: boolean            // Enable detailed logging
+  timeout?: number          // Request timeout (ms)
+  retries?: number          // Max retry attempts
+}
+```
+
+## Debug Mode
+
+Enable debug logging for development:
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: true
+})
+
+// Console output:
+// [Commet SDK] Initialized in development mode
+// API Key: ck_xxx12345...
+// Base URL: https://api.commet.co
+```
+
+## Validation
+
+The SDK validates your configuration on initialization:
+
+```typescript
+// ❌ Missing API key
+const commet = new Commet({})
+// Error: Commet SDK: API key is required
+
+// ❌ Invalid format
+const commet = new Commet({
+  apiKey: 'invalid-key'
+})
+// Error: Commet SDK: Invalid API key format. Expected format: ck_xxx...
+
+// ✅ Valid configuration
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef'
+})
+```
+
+## Best Practices
+
+### Environment Separation
+
+Use environment variables for different environments:
+
+```typescript title="lib/commet.ts"
+import { Commet } from '@commet/sdk'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: process.env.NODE_ENV === 'development'
+})
+```
+
+### Configuration Validation
+
+Validate configuration at startup:
+
+```typescript
+if (!process.env.COMMET_API_KEY) {
+  throw new Error('COMMET_API_KEY environment variable is required')
+}
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY
+})
+```
+
+### Secure Storage
+
+Never hardcode API keys:
+
+```typescript
+// ❌ Never do this
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef'
+})
+
+// ✅ Use environment variables
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+
+## Troubleshooting
+
+### Check Environment Detection
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: true
+})
+
+console.log('Environment:', commet.getEnvironment())
+console.log('Is Development:', commet.isDevelopment())
+console.log('Is Production:', commet.isProduction())
+```
+
+### Validate API Key Format
+
+```typescript
+const apiKey = process.env.COMMET_API_KEY
+if (!apiKey?.startsWith('ck_')) {
+  console.error('Invalid API key format')
+}
+```
+
+## What's next?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Dev Mode</h3>
+    <p className="text-sm text-muted-foreground">Safe development with event logging</p>
+    <p className="text-sm">[Learn dev mode →](/library/core/dev-mode)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Error Handling</h3>
+    <p className="text-sm text-muted-foreground">Robust error handling patterns</p>
+    <p className="text-sm">[Handle errors →](/library/core/error-handling)</p>
+  </div>
+</div>
