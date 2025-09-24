@@ -1,7 +1,0 @@
-{
-  "title": "Library",
-  "description": "El core de Commet",
-  "icon": "Cuboid",
-  "root": true,
-  "pages": ["---Guia---", "test"]
-}

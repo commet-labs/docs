@@ -1,0 +1,371 @@
+---
+title: Gestión de Clientes
+description: Gestión completa del ciclo de vida del cliente con direcciones y tributación
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Gestión de Clientes
+
+Gestiona el ciclo de vida completo del cliente con cálculos automáticos de impuestos basados en dirección y soporte multi-moneda.
+
+<Callout type="info">
+**Prerrequisitos:** Inicializa tu cliente Commet con una clave API válida.
+</Callout>
+
+## Operaciones Básicas
+
+### Crear Cliente
+
+Crea un nuevo cliente con información de facturación requerida:
+
+```typescript
+const customer = await commet.customers.create({
+  legalName: 'Acme Corporation',
+  displayName: 'Acme Corp',
+  currency: 'USD',
+  address: {
+    line1: '123 Business St',
+    line2: 'Suite 100',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'US'
+  },
+  billingEmail: 'billing@acme.com'
+})
+
+console.log('Cliente creado:', customer.data.id)
+```
+
+### Recuperar Cliente
+
+Obtén detalles del cliente por ID:
+
+```typescript
+const customer = await commet.customers.retrieve('cus_A1b2C3d4E5f6G7h8I9j0K1l2')
+
+console.log('Cliente:', customer.data.legalName)
+```
+
+### Actualizar Cliente
+
+Modifica información del cliente:
+
+```typescript
+const updated = await commet.customers.update('cus_A1b2C3d4E5f6G7h8I9j0K1l2', {
+  displayName: 'Acme Corporation Ltd',
+  billingEmail: 'accounts@acme.com'
+})
+```
+
+### Listar Clientes
+
+Recupera clientes con filtrado y paginación:
+
+```typescript
+const customers = await commet.customers.list({
+  currency: 'USD',
+  isActive: true,
+  limit: 50
+})
+
+console.log(`Encontrados ${customers.data.length} clientes`)
+```
+
+## Configuración de Impuestos
+
+Configura manejo de impuestos basado en ubicación del cliente:
+
+<Tabs items={['Gravado', 'Exento de Impuestos', 'Cargo Inverso', 'No Aplicable']}>
+<Tab value="Gravado">
+```typescript
+await commet.customers.create({
+  legalName: 'Standard Corp',
+  taxStatus: 'TAXED',
+  currency: 'USD',
+  address: {
+    line1: '456 Commerce Ave',
+    city: 'New York',
+    state: 'NY',
+    postalCode: '10001',
+    country: 'US'
+  }
+})
+```
+</Tab>
+<Tab value="Exento de Impuestos">
+```typescript
+await commet.customers.create({
+  legalName: 'Organización Sin Fines de Lucro',
+  taxStatus: 'TAX_EXEMPT',
+  currency: 'USD',
+  metadata: {
+    tax_exempt_id: '501c3-12345'
+  }
+})
+```
+</Tab>
+<Tab value="Cargo Inverso">
+```typescript
+await commet.customers.create({
+  legalName: 'European Business Ltd',
+  taxStatus: 'REVERSE_CHARGE',
+  currency: 'EUR',
+  address: {
+    line1: 'Business Park 1',
+    city: 'Amsterdam',
+    postalCode: '1000 AA',
+    country: 'NL'
+  }
+})
+```
+</Tab>
+<Tab value="No Aplicable">
+```typescript
+await commet.customers.create({
+  legalName: 'Organización Internacional',
+  taxStatus: 'NOT_APPLICABLE',
+  currency: 'USD'
+})
+```
+</Tab>
+</Tabs>
+
+## Soporte Multi-Moneda
+
+Crea clientes en diferentes monedas:
+
+```typescript
+// Cliente USD
+const usdCustomer = await commet.customers.create({
+  legalName: 'Empresa US',
+  currency: 'USD',
+  address: { 
+    line1: '123 Main St',
+    city: 'New York',
+    state: 'NY',
+    postalCode: '10001',
+    country: 'US'
+  }
+})
+
+// Cliente EUR  
+const eurCustomer = await commet.customers.create({
+  legalName: 'German GmbH',
+  currency: 'EUR',
+  address: {
+    line1: 'Hauptstraße 1',
+    city: 'Berlin',
+    postalCode: '10115',
+    country: 'DE'
+  }
+})
+
+// Cliente LATAM
+const brlCustomer = await commet.customers.create({
+  legalName: 'Empresa Brasil Ltda',
+  currency: 'BRL',
+  language: 'pt',
+  address: {
+    line1: 'Rua Principal 123',
+    city: 'São Paulo',
+    state: 'SP',
+    postalCode: '01000-000',
+    country: 'BR'
+  }
+})
+```
+
+## Propiedades del Cliente
+
+### Campos Requeridos
+
+```typescript
+await commet.customers.create({
+  legalName: 'Nombre de Empresa Requerido',  // Requerido
+  currency: 'USD',                          // Opcional, por defecto basado en dirección
+  address: {                                // Requerido
+    line1: '123 Required St',               // Requerido
+    city: 'Ciudad Requerida',               // Requerido
+    postalCode: '12345',                    // Requerido
+    country: 'US'                           // Requerido (formato ISO-2)
+  }
+})
+```
+
+### Campos Opcionales
+
+```typescript
+await commet.customers.create({
+  legalName: 'Full Example Corp',
+  displayName: 'Full Example',              // Nombre de visualización opcional
+  domain: 'example.com',                    // Dominio de empresa opcional
+  website: 'https://example.com',           // Sitio web opcional
+  taxStatus: 'TAXED',                       // Opcional, por defecto TAXED
+  currency: 'USD',
+  address: {
+    line1: '123 Business St',
+    line2: 'Suite 100',                     // Opcional
+    city: 'San Francisco',
+    state: 'CA',                            // Requerido para US/CA
+    postalCode: '94105',
+    country: 'US',
+    region: 'North America'                 // Opcional
+  },
+  billingEmail: 'billing@example.com',      // Opcional
+  paymentTerms: 'net_30',                   // Opcional
+  timezone: 'America/Los_Angeles',          // Opcional
+  language: 'en',                           // Opcional
+  industry: 'software',                     // Opcional
+  employeeCount: '11-50',                   // Opcional
+  metadata: {                               // Datos personalizados opcionales
+    salesforce_id: 'sf_123',
+    customer_tier: 'enterprise'
+  }
+})
+```
+
+## Características Avanzadas
+
+### Buscar Clientes
+
+Busca clientes por nombre u otros criterios:
+
+```typescript
+const results = await commet.customers.list({
+  search: 'acme',
+  currency: 'USD',
+  taxStatus: 'TAXED',
+  isActive: true
+})
+```
+
+### Metadata Personalizada
+
+Almacena datos adicionales con clientes:
+
+```typescript
+await commet.customers.update('cus_A1b2C3d4E5f6G7h8I9j0K1l2', {
+  metadata: {
+    crm_id: 'sf_123456',
+    tier: 'enterprise',
+    onboarding_date: '2024-01-15',
+    account_manager: 'john.doe@company.com'
+  }
+})
+```
+
+### Desactivar Cliente
+
+Eliminación suave de clientes cuando sea necesario:
+
+```typescript
+// Desactivar cliente
+await commet.customers.deactivate('cus_A1b2C3d4E5f6G7h8I9j0K1l2')
+
+// Reactivar cliente  
+await commet.customers.update('cus_A1b2C3d4E5f6G7h8I9j0K1l2', {
+  isActive: true
+})
+```
+
+## Manejo de Errores
+
+Maneja escenarios comunes de gestión de clientes:
+
+```typescript
+try {
+  const customer = await commet.customers.create({
+    legalName: 'Nuevo Cliente',
+    currency: 'USD',
+    address: {
+      line1: '123 Main St',
+      city: 'Anytown',
+      postalCode: '12345',
+      country: 'US'
+    }
+  })
+} catch (error) {
+  if (error instanceof CommetValidationError) {
+    console.log('Errores de validación:', error.validationErrors)
+  } else if (error instanceof CommetAPIError) {
+    console.log('Error de API:', error.statusCode, error.message)
+  }
+}
+```
+
+## Mejores Prácticas
+
+### Direcciones Completas
+
+Siempre incluye direcciones completas para cálculo preciso de impuestos:
+
+```typescript
+// ✅ Dirección completa
+address: {
+  line1: '123 Business St',
+  line2: 'Suite 100',    // Opcional pero útil
+  city: 'San Francisco',
+  state: 'CA',           // Requerido para US/CA
+  postalCode: '94105',
+  country: 'US'          // Formato ISO-2
+}
+
+// ❌ Dirección incompleta
+address: {
+  line1: '123 Business St',
+  country: 'US' // Falta ciudad y código postal requeridos
+}
+```
+
+### Consistencia de Moneda
+
+Haz coincidir la moneda del cliente con su región de facturación:
+
+```typescript
+// ✅ Consistente
+{ currency: 'EUR', address: { country: 'DE' }}
+{ currency: 'BRL', address: { country: 'BR' }}
+{ currency: 'USD', address: { country: 'US' }}
+
+// ⚠️ Puede necesitar revisión
+{ currency: 'USD', address: { country: 'DE' }}
+```
+
+### Metadata Estructurada
+
+Mantén metadata plana y buscable:
+
+```typescript
+// ✅ Buena estructura
+metadata: {
+  crm_id: 'sf_12345',
+  tier: 'enterprise',
+  industry: 'fintech'
+}
+
+// ❌ Evita objetos anidados
+metadata: {
+  crm: {
+    salesforce: { id: 'sf_12345' }
+  }
+}
+```
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Eventos de Uso</h3>
+    <p className="text-sm text-muted-foreground">Rastrea uso del cliente para facturación</p>
+    <p className="text-sm">[Rastrear uso →](/library/features/usage-events)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Gestión de Asientos</h3>
+    <p className="text-sm text-muted-foreground">Gestiona asientos de suscripción</p>
+    <p className="text-sm">[Gestionar asientos →](/library/features/seat-management)</p>
+  </div>
+</div>

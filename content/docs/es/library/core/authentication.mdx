@@ -1,0 +1,226 @@
+---
+title: Autenticación
+description: Autenticación segura con clave API y detección automática de entorno
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Autenticación
+
+Commet SDK utiliza autenticación por clave API con detección automática de entorno y validación.
+
+## Formato de Clave API
+
+Las claves API de Commet siguen un formato predecible para fácil identificación:
+
+```
+ck_xxx1234567890abcdef...  // Claves API de producción
+```
+
+<Callout type="warn">
+**Seguridad:** Nunca expongas las claves API en código del lado del cliente. Siempre usa rutas del lado del servidor o variables de entorno.
+</Callout>
+
+## Inicializar Cliente
+
+Configura tu cliente Commet con tu clave API:
+
+<Tabs items={['Configuración Básica', 'Con Opciones', 'Variables de Entorno']}>
+<Tab value="Configuración Básica">
+```typescript
+import { Commet } from 'commet'
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+</Tab>
+<Tab value="Con Opciones">
+```typescript
+import { Commet } from 'commet'
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'production',  // o 'development', 'auto'
+  debug: true,
+  timeout: 30000,
+  retries: 3
+})
+```
+</Tab>
+<Tab value="Variables de Entorno">
+```bash title=".env.local"
+COMMET_API_KEY=ck_xxx1234567890abcdef...
+```
+
+```typescript title="lib/commet.ts"
+import { Commet } from 'commet'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+</Tab>
+</Tabs>
+
+## Detección de Entorno
+
+El SDK detecta automáticamente tu entorno:
+
+### Detección Automática
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'auto', // Comportamiento por defecto
+})
+
+console.log(commet.getEnvironment()) // 'development' o 'production'
+```
+
+### Reglas de Detección
+
+El SDK detecta entorno de desarrollo cuando:
+
+- `NODE_ENV` es `development` o `test`
+- Se ejecuta en `localhost`, `127.0.0.1`, o redes locales
+- El hostname termina en `.local`
+
+Todos los otros casos por defecto son modo producción.
+
+## Opciones de Configuración
+
+Referencia completa de configuración:
+
+```typescript
+interface CommetConfig {
+  apiKey: string             // Requerido: Tu clave API
+  environment?: 'auto' | Environment // Auto-detectar o explícito
+  debug?: boolean            // Habilitar logging detallado
+  timeout?: number          // Timeout de petición (ms)
+  retries?: number          // Máximo intentos de reintento
+}
+```
+
+## Modo Debug
+
+Habilita logging de debug para desarrollo:
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: true
+})
+
+// Salida en consola:
+// [Commet SDK] Inicializado en modo desarrollo
+// Clave API: ck_xxx12345...
+// URL Base: https://api.commet.co
+```
+
+## Validación
+
+El SDK valida tu configuración al inicializar:
+
+```typescript
+// ❌ Falta clave API
+const commet = new Commet({})
+// Error: Commet SDK: Se requiere clave API
+
+// ❌ Formato inválido
+const commet = new Commet({
+  apiKey: 'clave-inválida'
+})
+// Error: Commet SDK: Formato de clave API inválido. Formato esperado: ck_xxx...
+
+// ✅ Configuración válida
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef'
+})
+```
+
+## Mejores Prácticas
+
+### Separación de Entornos
+
+Usa variables de entorno para diferentes entornos:
+
+```typescript title="lib/commet.ts"
+import { Commet } from 'commet'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: process.env.NODE_ENV === 'development'
+})
+```
+
+### Validación de Configuración
+
+Valida la configuración al inicio:
+
+```typescript
+if (!process.env.COMMET_API_KEY) {
+  throw new Error('Variable de entorno COMMET_API_KEY es requerida')
+}
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY
+})
+```
+
+### Almacenamiento Seguro
+
+Nunca hardcodees claves API:
+
+```typescript
+// ❌ Nunca hagas esto
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef'
+})
+
+// ✅ Usa variables de entorno
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+
+## Resolución de Problemas
+
+### Verificar Detección de Entorno
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: true
+})
+
+console.log('Entorno:', commet.getEnvironment())
+console.log('Es Desarrollo:', commet.isDevelopment())
+console.log('Es Producción:', commet.isProduction())
+```
+
+### Validar Formato de Clave API
+
+```typescript
+const apiKey = process.env.COMMET_API_KEY
+if (!apiKey?.startsWith('ck_')) {
+  console.error('Formato de clave API inválido')
+}
+```
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Modo Dev</h3>
+    <p className="text-sm text-muted-foreground">Desarrollo seguro con logging de eventos</p>
+    <p className="text-sm">[Aprende modo dev →](/library/core/dev-mode)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Manejo de Errores</h3>
+    <p className="text-sm text-muted-foreground">Patrones robustos de manejo de errores</p>
+    <p className="text-sm">[Manejar errores →](/library/core/error-handling)</p>
+  </div>
+</div>

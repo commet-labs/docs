@@ -1,0 +1,390 @@
+---
+title: Entornos
+description: Gestiona entornos de desarrollo y producción de manera efectiva
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Entornos
+
+Commet SDK proporciona gestión robusta de entornos con detección automática, modos de desarrollo seguros y configuración flexible para diferentes etapas de despliegue.
+
+<Callout type="info">
+**Seguro por Defecto:** El SDK automáticamente previene que los datos de desarrollo afecten la facturación de producción.
+</Callout>
+
+## Tipos de Entorno
+
+El SDK soporta dos entornos principales:
+
+### Entorno de Desarrollo
+
+Entorno seguro para desarrollo y pruebas:
+
+```typescript
+// Automáticamente detectado cuando NODE_ENV=development
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef',
+  // Entorno: 'development' (auto-detectado)
+  // Modo dev: Habilitado (logs en lugar de llamadas API)
+})
+
+console.log(commet.getEnvironment()) // 'development'
+console.log(commet.isDevelopment())  // true
+```
+
+### Entorno de Producción
+
+Entorno en vivo con llamadas API reales:
+
+```typescript
+// Automáticamente detectado cuando NODE_ENV=production
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef',
+  // Entorno: 'production' (auto-detectado)
+  // Modo dev: Deshabilitado (llamadas API reales)
+})
+
+console.log(commet.getEnvironment()) // 'production'
+console.log(commet.isProduction())   // true
+```
+
+## Detección de Entorno
+
+### Reglas de Detección Automática
+
+El SDK detecta entorno de desarrollo cuando:
+
+**Entorno Node.js:**
+- `process.env.NODE_ENV === 'development'`
+- `process.env.NODE_ENV === 'test'`
+
+**Entorno Navegador:**
+- `hostname === 'localhost'`
+- `hostname === '127.0.0.1'`
+- `hostname.startsWith('192.168.')`
+- `hostname.startsWith('10.')`
+- `hostname.endsWith('.local')`
+
+Todos los otros casos por defecto son producción.
+
+### Sobrescritura Manual
+
+Sobrescribe la detección automática cuando sea necesario:
+
+<Tabs items={['Entorno Explícito', 'Auto Detección', 'Verificar Entorno']}>
+<Tab value="Entorno Explícito">
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'development', // Forzar modo desarrollo
+  debug: true
+})
+
+// Siempre usa comportamiento de desarrollo sin importar NODE_ENV
+```
+</Tab>
+<Tab value="Auto Detección">
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'auto' // Comportamiento por defecto
+})
+
+// Usa detección automática basada en NODE_ENV y hostname
+```
+</Tab>
+<Tab value="Verificar Entorno">
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+
+console.log('Entorno:', commet.getEnvironment())
+console.log('Es Desarrollo:', commet.isDevelopment())
+console.log('Es Producción:', commet.isProduction())
+```
+</Tab>
+</Tabs>
+
+## Configuración de Entorno
+
+### Variables de Entorno
+
+Configura configuraciones específicas por entorno:
+
+<Tabs items={['Desarrollo', 'Producción', 'Multi-Entorno']}>
+<Tab value="Desarrollo">
+```bash title=".env.local"
+NODE_ENV=development
+COMMET_API_KEY=ck_xxx1234567890abcdef
+COMMET_DEBUG=true
+```
+
+```typescript title="lib/commet.ts"
+import { Commet } from 'commet'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: process.env.COMMET_DEBUG === 'true'
+})
+```
+</Tab>
+<Tab value="Producción">
+```bash title=".env.production"
+NODE_ENV=production
+COMMET_API_KEY=ck_xxx1234567890abcdef
+```
+
+```typescript title="lib/commet.ts"
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  // debug: false (por defecto en producción)
+})
+```
+</Tab>
+<Tab value="Multi-Entorno">
+```typescript title="lib/commet.ts"
+const getConfig = () => {
+  const env = process.env.NODE_ENV
+  
+  switch (env) {
+    case 'development':
+      return {
+        apiKey: process.env.COMMET_API_KEY!,
+        debug: true,
+        environment: 'development' as const
+      }
+    case 'production':
+      return {
+        apiKey: process.env.COMMET_API_KEY!,
+        debug: false
+      }
+    default:
+      throw new Error(`Entorno desconocido: ${env}`)
+  }
+}
+
+export const commet = new Commet(getConfig())
+```
+</Tab>
+</Tabs>
+
+## Estrategias de Despliegue
+
+### Despliegue Next.js
+
+Configura para diferentes entornos de despliegue:
+
+<Tabs items={['Desarrollo', 'Preview', 'Producción']}>
+<Tab value="Desarrollo">
+```typescript title="lib/commet.ts"
+import { Commet } from 'commet'
+
+const isDev = process.env.NODE_ENV === 'development'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: isDev,
+  // Modo dev automático en desarrollo
+})
+```
+</Tab>
+<Tab value="Preview">
+```typescript title="lib/commet.ts"
+// Para despliegues Preview de Vercel
+const isPreview = process.env.VERCEL_ENV === 'preview'
+
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: isPreview ? 'development' : 'auto',
+  debug: isPreview
+})
+```
+</Tab>
+<Tab value="Producción">
+```typescript title="lib/commet.ts"
+// Configuración lista para producción
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  // Usa modo producción automáticamente
+  timeout: 30000,
+  retries: 3
+})
+```
+</Tab>
+</Tabs>
+
+## Comportamiento Específico por Entorno
+
+### Características del Modo Desarrollo
+
+Cuando está en entorno de desarrollo:
+
+```typescript
+// Registra eventos en lugar de enviar peticiones API
+await commet.usage.events.create({
+  eventType: 'api_call',
+  customerId: 'cus_dev_123'
+})
+
+// Salida en consola:
+// [Commet SDK] Modo dev
+// Método: POST
+// Endpoint: https://api.commet.co/api/usage/events
+// Datos: { eventType: 'api_call', customerId: 'cus_dev_123' }
+// Petición registrada, no enviada al servidor
+```
+
+### Características del Modo Producción
+
+Cuando está en entorno de producción:
+
+```typescript
+// Hace peticiones API reales
+const result = await commet.usage.events.create({
+  eventType: 'api_call',
+  customerId: 'cus_prod_456'
+})
+
+console.log('Evento creado:', result.data.id) // ID de evento real
+```
+
+## Pruebas Across Entornos
+
+### Prueba de Entorno
+
+Prueba tu configuración de entorno:
+
+```typescript
+const testEnvironment = () => {
+  const commet = new Commet({
+    apiKey: process.env.COMMET_API_KEY!,
+    debug: true
+  })
+  
+  console.log('Entorno:', commet.getEnvironment())
+  console.log('Es Desarrollo:', commet.isDevelopment())
+  console.log('Es Producción:', commet.isProduction())
+  console.log('NODE_ENV:', process.env.NODE_ENV)
+  
+  return {
+    environment: commet.getEnvironment(),
+    nodeEnv: process.env.NODE_ENV
+  }
+}
+
+// Ejecutar en diferentes entornos
+console.log(testEnvironment())
+```
+
+## Mejores Prácticas
+
+### Separación de Entornos
+
+Mantén entornos completamente separados:
+
+```typescript
+// ✅ Configuración específica por entorno
+const getCommetClient = () => {
+  const env = process.env.NODE_ENV
+  
+  if (env === 'development') {
+    return new Commet({
+      apiKey: process.env.COMMET_API_KEY!,
+      debug: true
+    })
+  } else if (env === 'production') {
+    return new Commet({
+      apiKey: process.env.COMMET_API_KEY!,
+      timeout: 30000
+    })
+  }
+  
+  throw new Error(`Entorno desconocido: ${env}`)
+}
+```
+
+### Validación de Configuración
+
+Valida configuración al inicio:
+
+```typescript
+const validateConfig = () => {
+  const requiredEnvVars = ['NODE_ENV', 'COMMET_API_KEY']
+  
+  for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+      throw new Error(`Variable de entorno requerida faltante: ${envVar}`)
+    }
+  }
+  
+  const apiKey = process.env.COMMET_API_KEY!
+  const isProduction = process.env.NODE_ENV === 'production'
+  
+  if (!apiKey.startsWith('ck_')) {
+    console.warn('ADVERTENCIA: Formato de clave API inválido')
+  }
+}
+
+// Ejecutar validación antes de inicializar SDK
+validateConfig()
+export const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+
+### Lista de Verificación para Despliegue
+
+Antes de desplegar a producción:
+
+- [ ] Configurar `NODE_ENV=production`
+- [ ] Usar clave API de producción
+- [ ] Deshabilitar logging de debug
+- [ ] Configurar timeouts y reintentos apropiados
+- [ ] Validar que todas las variables de entorno estén configuradas
+
+```bash title="pre-deployment-check.sh"
+#!/bin/bash
+
+echo "Lista de verificación pre-despliegue..."
+
+# Verificar NODE_ENV
+if [ "$NODE_ENV" != "production" ]; then
+  echo "❌ NODE_ENV no está configurado a production"
+  exit 1
+fi
+
+# Verificar formato de clave API
+if [[ ! $COMMET_API_KEY =~ ^ck_ ]]; then
+  echo "❌ COMMET_API_KEY debería comenzar con ck_"
+  exit 1
+fi
+
+# Verificar variables requeridas
+for var in NODE_ENV COMMET_API_KEY; do
+  if [ -z "${!var}" ]; then
+    echo "❌ Variable de entorno requerida faltante: $var"
+    exit 1
+  fi
+done
+
+echo "✅ Configuración de entorno validada"
+```
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Guías de Instalación</h3>
+    <p className="text-sm text-muted-foreground">Configuración específica por framework</p>
+    <p className="text-sm">[Instalación →](/library/installation/nextjs)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Eventos de Uso</h3>
+    <p className="text-sm text-muted-foreground">Comenzar a rastrear uso across entornos</p>
+    <p className="text-sm">[Rastrear uso →](/library/features/usage-events)</p>
+  </div>
+</div>

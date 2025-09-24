@@ -1,0 +1,136 @@
+---
+title: Inicio Rápido
+description: Comienza con Commet SDK en menos de 5 minutos
+icon: Album
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Inicio Rápido
+
+Pon tu sistema de facturación en funcionamiento en menos de 5 minutos.
+
+<Callout type="info">
+**Prerrequisitos:** Necesitarás una cuenta de Commet y una clave API. [Regístrate aquí](https://demo.commet.co) si no tienes una.
+</Callout>
+
+<Steps>
+<Step>
+
+## Instala el SDK
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+<Tab value="npm">
+```bash
+npm install commet
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add commet
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add commet
+```
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+## Inicializa el cliente
+
+Crea tu cliente Commet con tu clave API:
+
+```typescript
+import { Commet } from 'commet'
+
+const commet = new Commet({
+  apiKey: 'tu-clave-api',
+  // Modo desarrollo habilitado automáticamente en desarrollo
+})
+```
+
+<Callout type="warn">
+**Mantén tu clave API segura:** Nunca expongas tu clave API en código del lado del cliente. Usa variables de entorno.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Envía tu primer evento de uso
+
+Rastrea el uso para facturación en una línea:
+
+```typescript
+// Rastrea llamadas API para facturación basada en uso
+await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  timestamp: new Date().toISOString(),
+})
+```
+
+</Step>
+
+<Step>
+
+## Gestiona licencias de asientos
+
+Agrega o remueve asientos para facturación por suscripción:
+
+```typescript
+// Agregar 5 asientos de admin
+await commet.seats.add({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  seatType: 'admin',
+  quantity: 5,
+})
+
+// Remover 2 asientos
+await commet.seats.remove({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', 
+  seatType: 'admin',
+  quantity: 2,
+})
+```
+
+</Step>
+</Steps>
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Guías de Framework</h3>
+    <p className="text-sm text-muted-foreground mb-3">Configuración detallada para tu stack</p>
+    <ul className="text-sm space-y-1">
+      <li>[Guía de Next.js](/library/installation/nextjs)</li>
+      <li>[Guía de Node.js](/library/installation/nodejs)</li>
+      <li>[Guía de Express](/library/installation/express)</li>
+    </ul>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Características Principales</h3>
+    <p className="text-sm text-muted-foreground">Domina lo esencial</p>
+    <ul className="text-sm space-y-1">
+      <li>[Eventos de Uso](/library/features/usage-events)</li>
+      <li>[Gestión de Asientos](/library/features/seat-management)</li>
+      <li>[Operaciones de Cliente](/library/features/customers)</li>
+    </ul>
+  </div>
+</div>
+
+## ¿Necesitas ayuda?
+
+- 📖 [Referencia Completa de API](/api-reference)
+- 💬 [Únete a nuestro Discord](https://discord.gg/commet)
+- 📧 [Contactar Soporte](mailto:support@commet.co)

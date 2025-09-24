@@ -1,0 +1,273 @@
+---
+title: Eventos de Uso
+description: Rastrea datos de uso para cálculos de facturación precisos
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Eventos de Uso
+
+Rastrea el uso del cliente para cálculos de facturación precisos. Envía eventos en tiempo real o agrúpalos para escenarios de alto volumen.
+
+<Callout type="info">
+**Prerrequisitos:** Inicializa tu cliente Commet con una clave API válida.
+</Callout>
+
+## Uso Básico
+
+Envía un solo evento de uso:
+
+```typescript
+const result = await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+})
+
+console.log('Evento rastreado:', result.data.id)
+```
+
+## Tipos de Evento
+
+Tipos de evento comunes para facturación:
+
+<Tabs items={['Llamadas API', 'Almacenamiento', 'Cómputo', 'Personalizado']}>
+<Tab value="Llamadas API">
+```typescript
+await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  metadata: {
+    endpoint: '/api/users',
+    method: 'GET'
+  }
+})
+```
+</Tab>
+<Tab value="Almacenamiento">
+```typescript
+await commet.usage.create({
+  eventType: 'storage_gb',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 2.5, // GB usados
+  metadata: {
+    region: 'us-east-1',
+    type: 'ssd'
+  }
+})
+```
+</Tab>
+<Tab value="Cómputo">
+```typescript
+await commet.usage.create({
+  eventType: 'compute_hours',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 0.25, // 15 minutos
+  metadata: {
+    instance_type: 't3.micro',
+    region: 'us-west-2'
+  }
+})
+```
+</Tab>
+<Tab value="Personalizado">
+```typescript
+await commet.usage.create({
+  eventType: 'email_sent',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 100,
+  metadata: {
+    campaign_id: 'camp_abc123',
+    template: 'welcome'
+  }
+})
+```
+</Tab>
+</Tabs>
+
+## Procesamiento en Lotes
+
+Envía múltiples eventos eficientemente:
+
+```typescript
+const events = [
+  {
+    eventType: 'api_call',
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    quantity: 1,
+    timestamp: '2024-01-15T10:00:00Z'
+  },
+  {
+    eventType: 'api_call', 
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    quantity: 1,
+    timestamp: '2024-01-15T10:01:00Z'
+  }
+]
+
+const result = await commet.usage.createBatch(events)
+console.log(`Rastreados ${result.data.length} eventos`)
+```
+
+## Opciones Avanzadas
+
+### Idempotencia
+
+Previene eventos duplicados con claves de idempotencia:
+
+```typescript
+await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  idempotencyKey: 'unique-key-123'
+})
+```
+
+### Timestamps Personalizados
+
+Rellena uso histórico:
+
+```typescript
+await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  timestamp: '2024-01-01T00:00:00Z'
+})
+```
+
+### Metadata Rica
+
+Agrega contexto para reportes y debugging:
+
+```typescript
+await commet.usage.create({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  metadata: {
+    user_id: 'usr_789',
+    endpoint: '/api/analytics',
+    response_time_ms: 150,
+    status_code: 200,
+    region: 'us-east-1'
+  }
+})
+```
+
+## Manejo de Errores
+
+Maneja escenarios comunes:
+
+```typescript
+try {
+  const result = await commet.usage.create({
+    eventType: 'api_call',
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    quantity: 1,
+  })
+  
+  console.log('Evento rastreado:', result.data.id)
+} catch (error) {
+  if (error.code === 'CUSTOMER_NOT_FOUND') {
+    console.log('El cliente no existe')
+  } else if (error.code === 'INVALID_EVENT_TYPE') {
+    console.log('Tipo de evento no configurado')
+  } else {
+    console.log('Error inesperado:', error.message)
+  }
+}
+```
+
+## Listar Eventos de Uso
+
+Recupera historial de uso para análisis:
+
+```typescript
+const events = await commet.usage.list({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  eventType: 'api_call',
+  startDate: '2024-01-01',
+  endDate: '2024-01-31',
+  limit: 100
+})
+
+console.log(`Encontrados ${events.data.length} eventos`)
+```
+
+## Mejores Prácticas
+
+### Aplicaciones de Alto Volumen
+
+Para aplicaciones enviando >1000 eventos/minuto:
+
+```typescript
+// Buffer de eventos local
+const eventBuffer = []
+
+// Agregar al buffer
+eventBuffer.push({
+  eventType: 'api_call',
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  quantity: 1,
+  timestamp: new Date().toISOString()
+})
+
+// Vaciar buffer cada 10 segundos o 100 eventos
+if (eventBuffer.length >= 100) {
+  await commet.usage.createBatch(eventBuffer)
+  eventBuffer.length = 0
+}
+```
+
+### Nomenclatura de Eventos
+
+Usa tipos de evento consistentes y descriptivos:
+
+```typescript
+// ✅ Bueno
+'api_call', 'storage_gb', 'compute_hours', 'email_sent'
+
+// ❌ Evita  
+'event1', 'usage', 'thing', 'api'
+```
+
+### Estructura de Metadata
+
+Mantén metadata plana y buscable:
+
+```typescript
+// ✅ Bueno
+metadata: {
+  endpoint: '/api/users',
+  method: 'GET',
+  user_id: 'usr_123'
+}
+
+// ❌ Evita objetos anidados
+metadata: {
+  request: {
+    endpoint: '/api/users',
+    details: { method: 'GET' }
+  }
+}
+```
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Gestión de Asientos</h3>
+    <p className="text-sm text-muted-foreground">Maneja facturación basada en suscripción</p>
+    <p className="text-sm">[Gestionar asientos →](/library/features/seat-management)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Manejo de Errores</h3>
+    <p className="text-sm text-muted-foreground">Patrones robustos de manejo de errores</p>
+    <p className="text-sm">[Manejar errores →](/library/core/error-handling)</p>
+  </div>
+</div>

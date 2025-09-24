@@ -1,0 +1,12 @@
+{
+  "title": "Biblioteca",
+  "description": "La biblioteca de Commet",
+  "icon": "Library",
+  "root": true,
+  "pages": [
+    "quickstart",
+    "installation",
+    "features",
+    "core"
+  ]
+}

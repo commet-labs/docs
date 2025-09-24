@@ -1,3 +1,3 @@
 {
-  "pages": ["core", "platform", "openapi"]
+  "pages": ["library", "platform", "openapi"]
 }

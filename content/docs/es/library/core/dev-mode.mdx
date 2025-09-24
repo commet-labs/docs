@@ -1,0 +1,305 @@
+---
+title: Modo Dev
+description: Desarrollo seguro con logging automático de eventos en lugar de llamadas API
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Modo Dev
+
+El modo dev proporciona un entorno de desarrollo seguro registrando eventos en la consola en lugar de enviarlos al servidor. Perfecto para desarrollo de facturación sin afectar datos de producción.
+
+<Callout type="info">
+**Seguro por Defecto:** El SDK automáticamente previene que los datos de desarrollo afecten la facturación de producción.
+</Callout>
+
+## Detección Automática
+
+El SDK automáticamente habilita el modo dev cuando detecta un entorno de desarrollo:
+
+```typescript
+import { Commet } from 'commet'
+
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef',
+  // Modo dev auto-habilitado cuando NODE_ENV=development
+})
+
+// En desarrollo
+await commet.usage.events.create({
+  eventType: 'api_call',
+  customerId: 'cus_test_123'
+})
+
+// Salida en consola:
+// [Commet SDK] Modo dev
+// Método: POST
+// Endpoint: https://api.commet.co/api/usage/events
+// Datos: { eventType: 'api_call', customerId: 'cus_test_123' }
+// Petición registrada, no enviada al servidor
+```
+
+## Control Manual
+
+Sobrescribe la detección automática cuando sea necesario:
+
+<Tabs items={['Entorno Explícito', 'Logging Debug', 'Verificar Entorno']}>
+<Tab value="Entorno Explícito">
+```typescript
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef',
+  environment: 'development', // Forzar modo dev
+})
+
+// Siempre registra en lugar de enviar, incluso en entorno de producción
+await commet.seats.add('cus_123', 'admin', 5)
+```
+</Tab>
+<Tab value="Logging Debug">
+```typescript
+const commet = new Commet({
+  apiKey: 'ck_xxx1234567890abcdef',
+  debug: true, // Habilitar logging detallado
+})
+
+// Muestra información detallada de petición/respuesta
+await commet.customers.create({
+  legalName: 'Empresa de Prueba'
+})
+```
+</Tab>
+<Tab value="Verificar Entorno">
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+
+console.log('Entorno:', commet.getEnvironment())
+console.log('Es Desarrollo:', commet.isDevelopment())
+console.log('Es Producción:', commet.isProduction())
+```
+</Tab>
+</Tabs>
+
+## Características del Modo Dev
+
+### Logging en Consola
+
+Todas las peticiones se registran con detalles completos:
+
+```typescript
+await commet.usage.events.create({
+  eventType: 'payment_processed',
+  customerId: 'cus_test_123',
+  properties: [
+    { property: 'amount', value: '5000' },
+    { property: 'currency', value: 'USD' }
+  ]
+})
+
+// Salida en consola:
+// [Commet SDK] Modo dev
+// Método: POST
+// Endpoint: https://api.commet.co/api/usage/events
+// Datos: {
+//   eventType: 'payment_processed',
+//   customerId: 'cus_test_123',
+//   properties: [
+//     { property: 'amount', value: '5000' },
+//     { property: 'currency', value: 'USD' }
+//   ]
+// }
+// Petición registrada, no enviada al servidor
+```
+
+### Respuestas Mock
+
+Retorna datos mock para encadenamiento:
+
+```typescript
+const result = await commet.customers.create({
+  legalName: 'Empresa de Prueba',
+  currency: 'USD'
+})
+
+console.log(result)
+// {
+//   success: true,
+//   devMode: true,
+//   data: { id: 'dev_1642123456789' }
+// }
+```
+
+## Detección de Entorno
+
+### Reglas de Detección
+
+El modo dev se habilita cuando:
+
+**Entorno Node.js:**
+- `NODE_ENV === 'development'`
+- `NODE_ENV === 'test'`
+
+**Entorno Navegador:**
+- `hostname === 'localhost'`
+- `hostname === '127.0.0.1'`
+- `hostname.startsWith('192.168.')`
+- `hostname.startsWith('10.')`
+- `hostname.endsWith('.local')`
+
+### Verificar Entorno
+
+Verifica la detección de entorno:
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: true
+})
+
+console.log('Entorno:', commet.getEnvironment())
+console.log('Es Desarrollo:', commet.isDevelopment())
+console.log('Es Producción:', commet.isProduction())
+
+// Con debug habilitado:
+// [Commet SDK] Inicializado en modo desarrollo
+// Modo dev: Los eventos se registrarán en consola, no se enviarán al servidor
+```
+
+## Flujo de Desarrollo
+
+### Probar Lógica de Facturación
+
+Prueba tu integración de facturación de forma segura:
+
+```typescript
+// Desarrollo - solo logs
+const processPayment = async (customerId: string, amount: number) => {
+  // Tu lógica de pago aquí...
+  
+  // Rastrear uso - seguro en desarrollo
+  await commet.usage.events.create({
+    eventType: 'payment_processed',
+    customerId,
+    properties: [
+      { property: 'amount', value: amount.toString() }
+    ]
+  })
+  
+  // Agregar asientos basado en plan
+  await commet.seats.add(customerId, 'user', 10)
+}
+
+await processPayment('cus_test_123', 5000)
+// Todo registrado en consola, sin cargos reales
+```
+
+### Pruebas en Lotes
+
+Prueba operaciones masivas de forma segura:
+
+```typescript
+const events = Array.from({ length: 100 }, (_, i) => ({
+  eventType: 'api_call',
+  customerId: `cus_test_${i}`,
+  properties: [
+    { property: 'endpoint', value: '/api/test' }
+  ]
+}))
+
+await commet.usage.events.createBatch({ events })
+
+// Salida en consola:
+// [Commet SDK] Modo dev
+// Método: POST
+// Endpoint: https://api.commet.co/api/usage/events/batch
+// Datos: { events: [100 eventos...] }
+// Petición registrada, no enviada al servidor
+```
+
+## Despliegue en Producción
+
+### Configuración de Entorno
+
+Configura para despliegue en producción:
+
+```typescript title="lib/commet.ts"
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  // Automáticamente usa producción cuando NODE_ENV=production
+  debug: process.env.NODE_ENV === 'development'
+})
+```
+
+### Lista de Verificación para Despliegue
+
+Antes de desplegar a producción:
+
+- [ ] Verificar que `NODE_ENV=production` esté configurado
+- [ ] Usar clave API de producción
+- [ ] Deshabilitar logging de debug
+- [ ] Probar detección de entorno
+
+## Mejores Prácticas
+
+### Variables de Entorno
+
+Usa configuración específica por entorno:
+
+```bash title=".env.local"
+# Desarrollo (usa modo dev automáticamente)
+NODE_ENV=development
+COMMET_API_KEY=ck_xxx1234567890abcdef
+
+# Producción
+NODE_ENV=production
+COMMET_API_KEY=ck_xxx1234567890abcdef
+```
+
+### Debugging de Desarrollo
+
+Usa modo debug para resolución de problemas:
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  debug: true
+})
+
+// Muestra detalles completos de petición/respuesta
+await commet.customers.list({ limit: 5 })
+```
+
+### Probar API Real
+
+Prueba con API real de forma controlada:
+
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: process.env.TEST_REAL_API === 'true' ? 'production' : 'auto'
+})
+
+// Solo envía peticiones reales cuando esté explícitamente habilitado
+await commet.usage.events.create({
+  eventType: 'test_event',
+  customerId: 'cus_test_safe'
+})
+```
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Manejo de Errores</h3>
+    <p className="text-sm text-muted-foreground">Patrones robustos de manejo de errores</p>
+    <p className="text-sm">[Manejar errores →](/library/core/error-handling)</p>
+  </div>
+  
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Entornos</h3>
+    <p className="text-sm text-muted-foreground">Gestionar diferentes entornos</p>
+    <p className="text-sm">[Configuración de entornos →](/library/core/environments)</p>
+  </div>
+</div>
