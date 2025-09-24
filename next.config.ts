@@ -29,7 +29,7 @@ const config: NextConfig = {
         source: "/pt",
         destination: "/pt/docs/library/quickstart",
         permanent: true,
-      }
+      },
     ];
   },
 };

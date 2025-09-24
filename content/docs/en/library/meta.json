@@ -3,10 +3,5 @@
   "description": "The library of Commet",
   "icon": "Library",
   "root": true,
-  "pages": [
-    "quickstart",
-    "installation",
-    "features",
-    "core"
-  ]
+  "pages": ["quickstart", "installation", "features", "core"]
 }
