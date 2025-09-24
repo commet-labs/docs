@@ -5,8 +5,8 @@
   "root": true,
   "pages": [
     "quickstart",
-    "features",
     "installation",
+    "features",
     "core"
   ]
 }
