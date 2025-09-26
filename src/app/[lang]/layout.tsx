@@ -1,5 +1,6 @@
 import "@/app/global.css";
 import { i18n } from "@/lib/i18n";
+import { Analytics } from "@vercel/analytics/next";
 import { defineI18nUI } from "fumadocs-ui/i18n";
 import { RootProvider } from "fumadocs-ui/provider";
 import { Inter } from "next/font/google";
@@ -27,6 +28,7 @@ export default async function RootLayout({
     <html lang={lang} className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
         <RootProvider i18n={provider(lang)}>{children}</RootProvider>
+        <Analytics />
       </body>
     </html>
   );
