@@ -1,5 +1,6 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { i18n } from "./i18n";
+import { source } from "./source";
 
 /**
  * Shared layout configurations
@@ -41,5 +42,9 @@ export function baseOptions(locale: string): BaseLayoutProps {
     githubUrl: "https://github.com/commet-labs/docs",
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [],
+    search: {
+      enabled: true,
+      api: "/api/search",
+    },
   };
 }

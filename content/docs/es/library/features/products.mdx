@@ -1,0 +1,113 @@
+---
+title: Catálogo de Productos
+description: Diseña y gobierna precios multinivel para todas las ofertas comerciales
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+import { Steps } from 'fumadocs-ui/components/steps'
+
+# Catálogo de Productos
+
+<Callout type="note">
+**FAST** - Foco en lo esencial, accesible para equipos cross-funcionales, estructura consistente y decisiones transparentes.
+</Callout>
+
+## Lo esencial en 1 minuto
+
+- **Objetivo**: centralizar strategy, precios oficiales y personalizaciones sin perder visibilidad analítica.
+- **Resultado**: acuerdos negociados parten del mismo catálogo, el motor de billing resuelve precios en cadena y revenue/sales comparten métricas.
+- **Lectores**: product managers, rev-ops, ingeniería de billing.
+- **Estado**: GA - última revisión 2025-10-03.
+
+## Alcance y supuestos
+
+- Cubre productos, list prices, price variants y agreements en organizaciones multi-tenant.
+- Describe los nueve modelos de pricing soportados y su relación con mínimos, créditos y asientos.
+- No documenta implementación de billing (ver [Motor de Billing](/library/core/dev-mode) para ejecución técnica).
+
+## Jerarquía de pricing
+
+| Nivel | Pregunta que responde | Ejemplos | Notas de gobierno |
+| --- | --- | --- | --- |
+| **Product** | ¿Qué vendes? | API Platform, Analytics Dashboard, Premium Support | Define tax category, métricas y ownership. |
+| **List Price** | ¿Cuál es el precio oficial? | Starter ($50), Enterprise ($500), Pay-per-use ($0.10) | Fuente de verdad: versión vigente por segmento/modelo. |
+| **Price Variant** | ¿Qué acordaste para un cliente? | Acme Corp -20%, Enterprise Plus +10% | Requiere approval según políticas de descuento. |
+| **Agreement** | ¿Qué firmó el cliente? | Contrato Q1 con bundles y promos | Permite fases, descuentos temporales y bundles. |
+
+```
+Product -> List Price -> Price Variant -> Agreement -> Billing
+```
+
+## Entidades principales
+
+- **Product**: servicio comercial con `tax_category_id`, `revenue_class` y ownership claro.
+- **ListPrice**: define `pricing_model`, moneda, unidades incluidas y versiones activas.
+- **PriceVariant**: hereda del list price y aplica descuentos, sobrecargos, unidad adicional o currency diferente.
+- **Agreement**: contrato firmado; enlaza múltiples `agreement_items`, descuentos globales y fases.
+- **MinimumFee / CreditGrant**: complementos opcionales ligados a uno o varios price variants.
+
+## Modelos de pricing soportados
+
+| Tipo | Uso típico | Claves | Ejemplo |
+| --- | --- | --- | --- |
+| **Fixed** | Suscripciones, fees únicos | `billingInterval` mensual/anual/one_time | `{ pricingModel: 'fixed', unitAmount: 50000 }` |
+| **Per Unit** | Uso lineal (API calls, GB) | `includedUnits` opcional | `{ pricingModel: 'per_unit', unitAmount: 1000 }` |
+| **Percentage** | Procesamiento de pagos | `percentageRate` en basis points, límites min/max | `{ percentageRate: 290, minFeePerUnit: 30 }` |
+| **Tiered - Volume** | Descuentos por tramo alcanzado | Solo paga el tramo donde cae | `tierType: 'volume'` |
+| **Tiered - Graduated** | Consumo acumulativo | Similar a impuestos progresivos | `tierType: 'graduated'` |
+| **Packaged** | Bundles cerrados (SMS, licencias) | Compra paquetes completos | `{ pricingModel: 'packaged', packageSize: 250 }` |
+| **Seat-based** | Productos por usuario/rol | `quantitySource: 'seat_balance'` | Compatibles con tiers graduados |
+| **Minimum Fee** | Garantiza revenue mínimo | Relación many-to-many con variants | `minimumAmount: 50000` |
+| **Credit Burndown** | Créditos prepagados | `enableCreditBurndown`, `creditBurndownRate` | Créditos se consumen antes de cobrar overage |
+
+> Los modelos 8 y 9 actúan como reglas adicionales; conviven con fixed/per-unit/tiers.
+
+## Flujo de trabajo end-to-end
+
+<Steps>
+  <Steps.Step title="Definir portafolio">
+  Crea productos por valor, impuestos y ownership. Un product no cambia salvo decisión de oferta.
+  </Steps.Step>
+  <Steps.Step title="Publicar list prices">
+  Configura precios oficiales por segmento, compromiso y modelo. Usa versionado para cambios.
+  </Steps.Step>
+  <Steps.Step title="Negociar variantes">
+  Cada negociación crea un price variant; aplica políticas de descuento y approvals automáticos.
+  </Steps.Step>
+  <Steps.Step title="Firmar agreement">
+  Arma bundles reales con múltiples productos, fases y descuentos de contrato.
+  </Steps.Step>
+  <Steps.Step title="Facturar y analizar">
+  El motor de billing resuelve `List -> Variant -> Agreement`, emite recibos y registra analytics de list vs actual.
+  </Steps.Step>
+</Steps>
+
+## Decisiones de producto y gobernanza
+
+- **Crear nuevo product** cuando cambia la proposición de valor, categoría fiscal o responsable de P&L.
+- **Crear nuevo list price** para segmentación, commitment o modelo distinto; reutiliza el existente para ajustes menores.
+- **Usar price variants** para términos permanentes por cliente; emplea descuentos de agreement para promos temporales.
+- **Políticas de descuento**: define umbrales (ej. >25 %) que exigen aprobación de Sales o Finance.
+- **Roadmap sugerido**: pruebas A/B de list prices, métricas de adopción de descuentos y automatización de expiración de variantes.
+
+## Integraciones clave
+
+- **Usage Module**: `price_variant.usage_metric_id` calcula overage y minimum fees.
+- **Seats Module**: `agreement_item.quantity_source = 'seat_balance'` habilita recuento automático de usuarios.
+- **Tax Module**: `product.tax_category_id` + ubicación del cliente determinan impuestos.
+- **Customer Module**: variantes opcionalmente ligadas a `customer_id` y moneda.
+- **Billing Engine**: aplica la cascada de precios, calcula impuestos y genera `receipt_lines`. Ver [Capa de Pricing](/library/core/dev-mode) para código.
+
+## Metricas para operar
+
+- **Precisión**: 0 errores de pricing en facturas emitidas.
+- **Cobertura**: 100 % de deals usan list prices o variants registrados.
+- **Tiempos**: resolución de precios menor a 2 s incluso con tiers complejos.
+- **Governance**: 100 % de descuentos fuera de política con aprobación registrada.
+- **Insights**: adopción de descuentos vs list price disponible en dashboards.
+
+## Próximos pasos sugeridos
+
+- Configura un catálogo inicial con al menos un product, tres list prices y una variant para validar el flujo completo.
+- Revisa las políticas de approvals con RevOps y Finanzas.
+- Coordina con el equipo de billing una prueba end-to-end usando datos de sandbox.
