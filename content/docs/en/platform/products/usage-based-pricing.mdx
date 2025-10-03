@@ -87,7 +87,6 @@ Create a usage metric that tracks specific customer behavior:
 
 - **Sum**: Total units consumed (API calls, storage GB, compute hours)
 - **Max**: Peak concurrent usage (max simultaneous connections, peak compute)
-- **Unique**: Distinct count (monthly active users, unique API keys used)
 - **Count**: Number of events (transactions, deployments, builds)
 
 ![Usage Metrics Table](/images/platform/usage-metric-table.png)
@@ -96,6 +95,8 @@ The usage metrics configuration shows how each metric is defined with its event 
 
 ### 2. Send usage events
 
+<Tabs items={['Via SDK/API', 'Via Web UI']}>
+<Tab value="Via SDK/API">
 Your application reports usage to Commet:
 
 ```typescript
@@ -117,6 +118,16 @@ await commet.usage.batchTrack([
   { customerId: "...", metricKey: "storage_gb", quantity: 25.5 }
 ]);
 ```
+</Tab>
+
+<Tab value="Via Web UI">
+You can also manually track usage events directly from the Commet platform interface:
+
+![Usage Event Creation UI](/images/platform/usage-event-creation-ui.png)
+
+The usage event creation form allows you to manually report usage for testing or one-off events by selecting the customer, metric, and quantity.
+</Tab>
+</Tabs>
 
 ![Usage Events Table](/images/platform/usage-events-table.png)
 
