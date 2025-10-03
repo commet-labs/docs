@@ -149,7 +149,6 @@ Usage metrics can be combined with multiple pricing models:
 - **With included units**: First 10K calls free, then $0.10 per call
 - **Credit burndown**: 50K API credits pack, 1 call = 5 credits
 
-**TODO: Add usage metrics architecture diagram here showing: Usage Event → Aggregation → Pricing Model → Invoice Line Item**
 
 **Best practices:**
 
@@ -213,7 +212,8 @@ The catalog supports both extremes on the same infrastructure, keeping segmentat
 
 ## Billing engine integration
 
-All billing internals live in `billing-engine.md`, but here’s the high-level handshake:
+{/* TODO: Add link to billing-engine.md once published */}
+All billing internals live in Billing Engine, but here's the high-level handshake:
 
 - Products provide tax categories and descriptions for invoices.
 - List prices act as the official baseline for negotiations.
