@@ -1,17 +1,75 @@
 ---
-title: Comenzar en plataforma
-description: Componentes
+title: Plataforma de Facturación Commet
+description: La infraestructura de facturación para empresas SaaS modernas
 ---
 
-## Bloque de Código
+import { Callout } from 'fumadocs-ui/components/callout'
 
-```js
-console.log('Hola Mundo');
-```
+# Plataforma de Facturación Commet
 
-## Tarjetas
+Commet es la infraestructura de facturación para empresas SaaS que necesitan escalar más allá de suscripciones básicas. Construida para negocios de LATAM, Commet maneja modelos de pricing complejos, facturación basada en uso y contratos enterprise con la flexibilidad para adaptarse a tu modelo de negocio.
 
-<Cards>
-  <Card title="Aprende más sobre Next.js" href="https://nextjs.org/docs" />
-  <Card title="Aprende más sobre Fumadocs" href="https://fumadocs.vercel.app" />
-</Cards>
+<Callout type="info">
+La documentación de plataforma está dirigida a operadores de negocio. Para SDKs, endpoints y ejemplos de código, dirígete a la Biblioteca de Desarrolladores.
+</Callout>
+
+## ¿Por qué Commet?
+
+Las empresas SaaS modernas necesitan infraestructura de facturación que vaya más allá de simples suscripciones mensuales. Ya sea que estés lanzando con pricing freemium, negociando contratos enterprise o experimentando con modelos basados en uso, tu sistema de facturación debe habilitar el crecimiento—no limitarlo.
+
+Commet proporciona:
+
+- **Modelos de pricing flexibles**: Desde suscripciones simples hasta pricing complejo basado en uso con tiers, asientos y modelos híbridos
+- **Listo para enterprise**: Soporte para contratos personalizados, pricing negociado y flujos de aprobación
+- **Cumplimiento LATAM**: Soporte integrado para regulaciones fiscales locales, monedas y requisitos de facturación
+- **Control self-hosted**: Despliega en tu infraestructura con propiedad total de datos y personalización
+- **Developer-first**: APIs y SDKs completos para integrar facturación en la experiencia de tu producto
+
+
+<!-- TODO: Replace with Spanish dashboard image -->
+![Dashboard de Commet](/images/platform/en/dashboard.png)
+
+
+## Capacidades Clave
+
+### Catálogo de Productos y Pricing
+Define tus productos y estrategias de pricing con soporte para más de 9 modelos de pricing incluyendo suscripciones fijas, basadas en uso, tiered pricing, basadas en asientos y combinaciones híbridas.
+
+### Acuerdos
+Crea y gestiona contratos de clientes con pricing personalizado, descuentos y términos. Maneja desde suscripciones self-serve hasta negociaciones enterprise con flujos de aprobación integrados.
+
+
+### Seguimiento y Medición de Uso
+Ingesta y procesa eventos de uso en tiempo real. Rastrea llamadas a API, horas de cómputo, almacenamiento, transacciones—cualquier métrica que impulse tu pricing.
+
+### Facturación e Invoicing
+Ciclos de facturación automatizados con soporte para modelos prepago, postpago e híbridos. Genera facturas conformes con manejo fiscal adecuado para mercados LATAM.
+
+
+## ¿Qué sigue?
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="border rounded-lg p-4">
+    <h3 className="font-semibold mt-0">Catálogo de Productos</h3>
+    <p className="text-sm text-muted-foreground">Aprende cómo estructurar tus productos y estrategias de pricing</p>
+    <p className="text-sm">[Explorar Catálogo de Productos →](./platform/products/catalog-overview)</p>
+  </div>
+
+  <div className="border rounded-lg p-4 opacity-50 cursor-not-allowed">
+    <h3 className="font-semibold mt-0">Acuerdos de Clientes</h3>
+    <p className="text-sm text-muted-foreground">Configura contratos de clientes y gestiona suscripciones</p>
+    <p className="text-sm text-muted-foreground">Próximamente</p>
+  </div>
+
+  <div className="border rounded-lg p-4 opacity-50 cursor-not-allowed">
+    <h3 className="font-semibold mt-0">Seguimiento y Medición de Uso</h3>
+    <p className="text-sm text-muted-foreground">Rastrea llamadas a API, horas de cómputo y métricas de uso personalizadas</p>
+    <p className="text-sm text-muted-foreground">Próximamente</p>
+  </div>
+
+  <div className="border rounded-lg p-4 opacity-50 cursor-not-allowed">
+    <h3 className="font-semibold mt-0">Facturación e Invoicing</h3>
+    <p className="text-sm text-muted-foreground">Ciclos de facturación automatizados y generación de facturas</p>
+    <p className="text-sm text-muted-foreground">Próximamente</p>
+  </div>
+</div>
