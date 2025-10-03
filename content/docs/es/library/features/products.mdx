@@ -4,7 +4,7 @@ description: Diseña y gobierna precios multinivel para todas las ofertas comerc
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout'
-import { Steps } from 'fumadocs-ui/components/steps'
+import { Steps, Step } from 'fumadocs-ui/components/steps'
 
 # Catálogo de Productos
 
@@ -65,21 +65,21 @@ Product -> List Price -> Price Variant -> Agreement -> Billing
 ## Flujo de trabajo end-to-end
 
 <Steps>
-  <Steps.Step title="Definir portafolio">
+  <Step title="Definir portafolio">
   Crea productos por valor, impuestos y ownership. Un product no cambia salvo decisión de oferta.
-  </Steps.Step>
-  <Steps.Step title="Publicar list prices">
+  </Step>
+  <Step title="Publicar list prices">
   Configura precios oficiales por segmento, compromiso y modelo. Usa versionado para cambios.
-  </Steps.Step>
-  <Steps.Step title="Negociar variantes">
+  </Step>
+  <Step title="Negociar variantes">
   Cada negociación crea un price variant; aplica políticas de descuento y approvals automáticos.
-  </Steps.Step>
-  <Steps.Step title="Firmar agreement">
+  </Step>
+  <Step title="Firmar agreement">
   Arma bundles reales con múltiples productos, fases y descuentos de contrato.
-  </Steps.Step>
-  <Steps.Step title="Facturar y analizar">
+  </Step>
+  <Step title="Facturar y analizar">
   El motor de billing resuelve `List -> Variant -> Agreement`, emite recibos y registra analytics de list vs actual.
-  </Steps.Step>
+  </Step>
 </Steps>
 
 ## Decisiones de producto y gobernanza
