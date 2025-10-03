@@ -42,9 +42,5 @@ export function baseOptions(locale: string): BaseLayoutProps {
     githubUrl: "https://github.com/commet-labs/docs",
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [],
-    search: {
-      enabled: true,
-      api: "/api/search",
-    },
   };
 }
