@@ -49,12 +49,55 @@ The billing engine automatically resolves: List → Variant → Agreement → Fi
 - **Product strategy**: PMs launch plans without engineering handoffs.
 - **Customer transparency**: agreements show every component and its price origin.
 
+## How to use the catalog
+
+### View products and prices
+
+1. Navigate to **Products** in the platform
+2. Browse your product catalog to see all available SKUs
+3. Click on any product to view its list prices and price variants
+4. Review pricing by currency, segment, or customer
+
+### Create a list price
+
+1. Select a product from your catalog
+2. Click **Create List Price**
+3. Configure the pricing details:
+   - Display name (e.g., "Enterprise Annual Plan")
+   - Billing frequency (monthly, annual, one-time)
+   - Pricing model (fixed, usage-based, tiered)
+   - Currency and amount
+4. Save the list price—it becomes available for quotes and billing schedules
+
+### Create a price variant
+
+1. Start with an existing list price
+2. Click **Create Variant** to customize for a specific customer or segment
+3. Apply adjustments:
+   - Discounts or markups
+   - Modified unit amounts
+   - Custom included units
+   - Different currency
+4. Link to a customer (optional) or use for segment-based pricing
+
+### Use prices in quotes and billing
+
+**For customer quotes:**
+1. Select a list price as your starting point
+2. Apply any necessary adjustments via price variant
+3. Generate the quote with transparent pricing breakdown
+
+**For billing schedules:**
+1. Reference list prices or price variants in agreements
+2. The billing engine automatically calculates based on the pricing cascade
+3. Invoices show clear line items with pricing origin
+
 ## Example journeys
 
 ### SaaS with a freemium ladder
 
 1. Publish a progression of plans (Free → Starter → Pro → Enterprise).
-2. Attach add-ons like “Advanced Analytics” or “Priority Support”.
+2. Attach add-ons like "Advanced Analytics" or "Priority Support".
 3. When an enterprise customer negotiates, create a price variant with a volume discount.
 4. Bundle everything inside the agreement so billing picks it up automatically.
 

@@ -14,6 +14,15 @@ This page connects the strategy behind the Product Catalog to the systems that e
 Platform documentation aims at business operators. For SDKs, endpoints, and code samples head to the Developer Library.
 </Callout>
 
+## Accessing the product catalog
+
+The product catalog is available through the **Products** section in your Commet platform. From here you can:
+
+- **View all products**: Browse your complete product portfolio with SKUs, descriptions, and tax categories
+- **Manage list prices**: Create and edit standard prices for each product across currencies and segments
+- **Configure price variants**: Set up customer-specific pricing with discounts, markups, or custom terms
+- **Link to agreements**: See which agreements reference specific prices or variants
+
 ## Why the catalog exists
 
 The catalog solves pricing-complexity management for billing platforms that juggle multiple pricing models and customer-specific terms.
@@ -35,6 +44,8 @@ The catalog solves pricing-complexity management for billing platforms that jugg
 - Freedom to support any business model without code changes.
 
 ## Four pricing layers working together
+
+Prices act as the core building blocks in Commet. Each price defines unit cost, pricing model, currency, billing frequency, and billing type. These prices can be reused across multiple customers, making catalog management efficient and scalable.
 
 ```
 Products describe the services you sell:
@@ -71,9 +82,18 @@ Agreement: Acme Corp – Q1 2025
 
 Each layer keeps analytics intact and separates permanent configuration (variants) from temporary negotiation tools (agreement discounts).
 
+### Price reusability and identification
+
+Every price in the catalog has a unique `price_id` that serves as its identifier across the platform. This allows you to:
+
+- **Reuse standard prices** across multiple customers without duplication
+- **Track pricing changes** and maintain historical accuracy
+- **Reference prices** consistently in agreements, invoices, and analytics
+- **Create variants** from existing list prices while preserving the relationship
+
 ## Real-world catalogs
 
-<Tabs items={['SaaS Ladder', 'Payments', 'AI & ML']}>
+<Tabs items={['SaaS Ladder', 'Payments', 'AI & ML', 'Usage Metrics']}>
 <Tab value="SaaS Ladder">
 **Company**: DevTools Inc. – API development platform
 
@@ -97,6 +117,47 @@ Each layer keeps analytics intact and separates permanent configuration (variant
 - List prices mix on-demand, reserved, and spot usage offers.
 - Variants track high-volume seat discounts and custom GPU bundles.
 - Agreements apply temporary promos while variants manage long-term terms.
+</Tab>
+<Tab value="Usage Metrics">
+**Understanding Usage-Based Pricing**
+
+Usage metrics are the foundation of consumption-based pricing models. They track customer activity and convert it into billable units.
+
+**How usage metrics work:**
+
+1. **Define the metric**: Create a usage metric that tracks specific customer behavior (API calls, storage GB, compute hours, transactions processed).
+2. **Send usage events**: Your application reports usage events to Commet in real-time or in batches.
+3. **Aggregate consumption**: The billing engine aggregates usage data for each billing period.
+4. **Apply pricing rules**: Your configured pricing model (linear, tiered, packaged) calculates the charge.
+5. **Generate invoices**: Usage charges appear as line items with consumption details.
+
+**Common usage metric examples:**
+
+- **API Platforms**: API calls, requests per minute, data transfer GB
+- **Infrastructure**: Compute hours, storage GB, bandwidth consumed
+- **Communications**: SMS sent, phone minutes, email deliveries
+- **AI/ML**: Model predictions, training hours, tokens processed
+- **Payment Processing**: Transaction volume, payment count
+
+**Pricing flexibility with usage metrics:**
+
+Usage metrics can be combined with multiple pricing models:
+- **Linear**: $0.10 per API call
+- **Graduated tiers**: First 100K calls @ $0.10, next 400K @ $0.08, 500K+ @ $0.05
+- **Volume tiers**: 0-100K @ $0.10, 100K+ @ $0.07 (customer pays only their tier rate)
+- **Packaged**: $25 per 1,000 API calls
+- **With included units**: First 10K calls free, then $0.10 per call
+- **Credit burndown**: 50K API credits pack, 1 call = 5 credits
+
+**TODO: Add usage metrics architecture diagram here showing: Usage Event → Aggregation → Pricing Model → Invoice Line Item**
+
+**Best practices:**
+
+- Name metrics clearly (e.g., "api-calls" not "metric-1")
+- Choose appropriate aggregation (sum for API calls, max for concurrent users, unique for monthly active users)
+- Set up alerts for unusual consumption patterns
+- Provide customers with real-time usage dashboards
+- Include usage details in invoices for transparency
 </Tab>
 </Tabs>
 
