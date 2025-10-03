@@ -89,14 +89,10 @@ Create a usage metric that tracks specific customer behavior:
 - **Max**: Peak concurrent usage (max simultaneous connections, peak compute)
 - **Count**: Number of events (transactions, deployments, builds)
 
-![Usage Metrics Table](/images/platform/usage-metric-table.png)
-
-The usage metrics configuration shows how each metric is defined with its event type (user_activity, data_processing, payment_transaction, api_call) and aggregation method (Count, Sum, Unique) to properly track and bill consumption.
-
 ### 2. Send usage events
 
-<Tabs items={['Via SDK/API', 'Via Web UI']}>
-<Tab value="Via SDK/API">
+<Tabs items={['Via SDK', 'Via Web UI']}>
+<Tab value="Via SDK">
 Your application reports usage to Commet:
 
 ```typescript
@@ -121,17 +117,14 @@ await commet.usage.batchTrack([
 </Tab>
 
 <Tab value="Via Web UI">
+
 You can also manually track usage events directly from the Commet platform interface:
 
-![Usage Event Creation UI](/images/platform/usage-event-creation-ui.png)
 
 The usage event creation form allows you to manually report usage for testing or one-off events by selecting the customer, metric, and quantity.
 </Tab>
 </Tabs>
 
-![Usage Events Table](/images/platform/usage-events-table.png)
-
-The usage events table shows individual tracking events with Event IDs, event types (sms_notification, api_call, payment_transaction), customer assignments, and precise timestamps for accurate billing period assignment.
 
 ### 3. Automatic aggregation
 
@@ -233,7 +226,7 @@ When using percentage-based pricing, you can set optional **minimum and maximum 
 
 **Configuration example:**
 
-![Percentage Pricing Configuration](/images/platform/per_unit-percentaje-min-fee-max-fee.png)
+![Percentage Pricing Configuration](/images/platform/en/per_unit-percentaje-min-fee-max-fee.png)
 
 The percentage pricing configuration shows how to set up thresholds with Type: Percentage selected, including the percentage rate (2.9%), optional minimum fee ($0.30), and optional maximum fee ($10.00) to control edge cases in transaction-based pricing.
 
