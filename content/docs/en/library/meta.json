@@ -1,6 +1,6 @@
 {
   "title": "Library",
-  "description": "The library of Commet",
+  "description": "Learn how to use the Commet SDK",
   "icon": "Library",
   "root": true,
   "pages": ["quickstart", "installation", "features", "core"]

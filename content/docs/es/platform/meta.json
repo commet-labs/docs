@@ -1,7 +1,7 @@
 {
   "title": "Plataforma",
-  "description": "La biblioteca headless",
+  "description": "Aprende qué es Commet y cómo funciona",
   "icon": "Cuboid",
   "root": true,
-  "pages": ["index", "guia-inicio"]
+  "pages": ["index", "comparacion", "guia-inicio"]
 }
