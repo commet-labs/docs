@@ -1,6 +1,6 @@
 {
   "title": "Products",
   "description": "Everything go-to-market teams need to run pricing in Commet",
-  "icon": "Products",
+  "icon": "Box",
   "pages": ["catalog-overview", "business-logic", "usage-based-pricing", "seat-based-pricing"]
 }

@@ -1,7 +1,7 @@
 {
   "title": "Platform",
-  "description": "The headless library",
+  "description": "Learn what Commet is and how it works",
   "icon": "Cuboid",
   "root": true,
-  "pages": ["index", "start-guide", "products"]
+  "pages": ["comparision", "index", "start-guide", "products"]
 }
