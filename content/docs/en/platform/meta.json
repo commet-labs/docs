@@ -1,7 +1,7 @@
 {
-  "title": "Platform",
+  "title": "Platform and Guides",
   "description": "Learn what Commet is and how it works",
-  "icon": "Cuboid",
-  "root": true,
-  "pages": ["comparision", "index", "start-guide", "products"]
+  "icon": "Book",
+  "root": false,
+  "pages": ["index", "overview","comparision", "onboarding", "products"]
 }
