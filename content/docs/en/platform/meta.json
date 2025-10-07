@@ -3,5 +3,5 @@
   "description": "The headless library",
   "icon": "Cuboid",
   "root": true,
-  "pages": ["index", "products"]
+  "pages": ["index", "start-guide", "products"]
 }
