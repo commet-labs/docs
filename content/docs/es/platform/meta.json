@@ -3,5 +3,5 @@
   "description": "La biblioteca headless",
   "icon": "Cuboid",
   "root": true,
-  "pages": ["index"]
+  "pages": ["index", "inicio"]
 }
