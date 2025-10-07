@@ -1,6 +1,6 @@
 {
   "title": "Start Guide",
   "description": "a quick guide to get you started with Commet",
-  "icon": "Start",
+  "icon": "BookOpen",
   "pages": ["onboarding", "overview"]
 }
