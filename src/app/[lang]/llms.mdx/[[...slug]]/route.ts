@@ -3,6 +3,8 @@ import { source } from "@/lib/source";
 import { notFound } from "next/navigation";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Force static generation
+export const dynamic = "force-static";
 export const revalidate = false;
 
 export async function GET(
