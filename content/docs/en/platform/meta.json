@@ -2,6 +2,6 @@
   "title": "Platform and Guides",
   "description": "Learn what Commet is and how it works",
   "icon": "Book",
-  "root": false,
-  "pages": ["index", "overview","comparision", "onboarding", "products"]
+  "root": true,
+  "pages": ["index", "overview", "comparision", "onboarding", "products"]
 }

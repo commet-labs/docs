@@ -18,26 +18,43 @@ Manage the complete customer lifecycle with automatic address-based tax calculat
 
 ### Create Customer
 
-Create a new customer with required billing information:
+Create a customer with minimal information to start billing:
 
 ```typescript
 const customer = await commet.customers.create({
   legalName: 'Acme Corporation',
-  displayName: 'Acme Corp',
-  currency: 'USD',
-  address: {
-    line1: '123 Business St',
-    line2: 'Suite 100',
-    city: 'San Francisco',
-    state: 'CA',
-    postalCode: '94105',
-    country: 'US'
-  },
-  billingEmail: 'billing@acme.com'
+  billingEmail: 'billing@acme.com',
+  currency: 'USD'
 })
 
 console.log('Customer created:', customer.data.id)
 ```
+
+<Callout type="info">
+**Address is optional** at creation. Add it later when needed for tax calculation or before generating invoices with tax requirements.
+</Callout>
+
+### Link to Your System
+
+Use `externalId` to connect Commet customers with your existing user database:
+
+```typescript
+const customer = await commet.customers.create({
+  externalId: user.id, // Your system's user ID
+  legalName: 'Acme Corporation',
+  billingEmail: user.email,
+  currency: 'USD'
+})
+
+// Later, find by your ID without storing Commet's
+const customers = await commet.customers.list({
+  externalId: user.id
+})
+```
+
+<Callout type="info">
+**External ID** is unique per organization. Use it to sync customers without storing Commet IDs in your database.
+</Callout>
 
 ### Retrieve Customer
 
@@ -76,11 +93,23 @@ console.log(`Found ${customers.data.length} customers`)
 
 ## Tax Configuration
 
-Configure tax handling based on customer location:
+Configure tax handling based on business requirements. Default is `NOT_APPLICABLE` (B2B standard).
 
-<Tabs items={['Taxed', 'Tax Exempt', 'Reverse Charge', 'Not Applicable']}>
+<Tabs items={['Not Applicable', 'Taxed', 'Tax Exempt', 'Reverse Charge']}>
+<Tab value="Not Applicable">
+```typescript
+// Default for B2B - customer handles tax compliance
+await commet.customers.create({
+  legalName: 'Business Client Corp',
+  billingEmail: 'billing@client.com',
+  currency: 'USD'
+  // taxStatus: 'NOT_APPLICABLE' (default)
+})
+```
+</Tab>
 <Tab value="Taxed">
 ```typescript
+// Platform collects and remits tax - requires address
 await commet.customers.create({
   legalName: 'Standard Corp',
   taxStatus: 'TAXED',
@@ -97,6 +126,7 @@ await commet.customers.create({
 </Tab>
 <Tab value="Tax Exempt">
 ```typescript
+// Tax-exempt entity
 await commet.customers.create({
   legalName: 'Non-Profit Organization',
   taxStatus: 'TAX_EXEMPT',
@@ -109,6 +139,7 @@ await commet.customers.create({
 </Tab>
 <Tab value="Reverse Charge">
 ```typescript
+// EU reverse charge mechanism
 await commet.customers.create({
   legalName: 'European Business Ltd',
   taxStatus: 'REVERSE_CHARGE',
@@ -122,16 +153,11 @@ await commet.customers.create({
 })
 ```
 </Tab>
-<Tab value="Not Applicable">
-```typescript
-await commet.customers.create({
-  legalName: 'International Org',
-  taxStatus: 'NOT_APPLICABLE',
-  currency: 'USD'
-})
-```
-</Tab>
 </Tabs>
+
+<Callout type="warning">
+**Tax validation:** Customers with `taxStatus: 'TAXED'` require a complete address before invoicing. Add address during onboarding or before first billing cycle.
+</Callout>
 
 ## Multi-Currency Support
 
@@ -184,26 +210,37 @@ const brlCustomer = await commet.customers.create({
 
 ```typescript
 await commet.customers.create({
-  legalName: 'Required Company Name',  // Required
-  currency: 'USD',                     // Optional, defaults based on address
-  address: {                           // Required
-    line1: '123 Required St',          // Required
-    city: 'Required City',             // Required
-    postalCode: '12345',               // Required
-    country: 'US'                      // Required (ISO-2 format)
+  legalName: 'Required Company Name'  // Only required field
+  // Everything else is optional
+})
+```
+
+### Add Address Later
+
+Complete customer profile when address information becomes available:
+
+```typescript
+await commet.customers.update(customerId, {
+  address: {
+    line1: '123 Business St',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'US'  // ISO-2 format
   }
 })
 ```
 
-### Optional Fields
+### Complete Example
 
 ```typescript
 await commet.customers.create({
+  externalId: 'usr_123',               // Your user ID
   legalName: 'Full Example Corp',
-  displayName: 'Full Example',         // Optional display name
-  domain: 'example.com',               // Optional company domain
-  website: 'https://example.com',      // Optional website
-  taxStatus: 'TAXED',                  // Optional, defaults to TAXED
+  displayName: 'Full Example',
+  domain: 'example.com',
+  website: 'https://example.com',
+  taxStatus: 'NOT_APPLICABLE',         // Default
   currency: 'USD',
   address: {
     line1: '123 Business St',
@@ -229,16 +266,28 @@ await commet.customers.create({
 
 ## Advanced Features
 
+### Search by External ID
+
+Find customers using your system's identifier:
+
+```typescript
+const customers = await commet.customers.list({
+  externalId: user.id
+})
+
+const customer = customers.data[0]
+```
+
 ### Search Customers
 
-Search customers by name or other criteria:
+Filter customers by attributes:
 
 ```typescript
 const results = await commet.customers.list({
-  search: 'acme',
   currency: 'USD',
-  taxStatus: 'TAXED',
-  isActive: true
+  taxStatus: 'NOT_APPLICABLE',
+  isActive: true,
+  limit: 50
 })
 ```
 
@@ -298,26 +347,30 @@ try {
 
 ## Best Practices
 
-### Complete Addresses
+### Progressive Onboarding
 
-Always include complete addresses for accurate tax calculation:
+Create customers immediately, add details later:
 
 ```typescript
-// ✅ Complete address
-address: {
-  line1: '123 Business St',
-  line2: 'Suite 100',    // Optional but helpful
-  city: 'San Francisco',
-  state: 'CA',           // Required for US/CA
-  postalCode: '94105',
-  country: 'US'          // ISO-2 format
-}
+// Step 1: Initial registration
+const customer = await commet.customers.create({
+  externalId: user.id,
+  legalName: user.companyName,
+  billingEmail: user.email,
+  currency: 'USD'
+})
 
-// ❌ Incomplete address
-address: {
-  line1: '123 Business St',
-  country: 'US' // Missing required city and postalCode
-}
+// Step 2: Complete profile when information is available
+await commet.customers.update(customer.data.id, {
+  address: {
+    line1: '123 Business St',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'US'
+  },
+  taxStatus: 'TAXED'  // Enable tax calculation
+})
 ```
 
 ### Currency Consistency

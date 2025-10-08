@@ -18,26 +18,43 @@ Gestiona el ciclo de vida completo del cliente con cálculos automáticos de imp
 
 ### Crear Cliente
 
-Crea un nuevo cliente con información de facturación requerida:
+Crea un cliente con información mínima para comenzar facturación:
 
 ```typescript
 const customer = await commet.customers.create({
   legalName: 'Acme Corporation',
-  displayName: 'Acme Corp',
-  currency: 'USD',
-  address: {
-    line1: '123 Business St',
-    line2: 'Suite 100',
-    city: 'San Francisco',
-    state: 'CA',
-    postalCode: '94105',
-    country: 'US'
-  },
-  billingEmail: 'billing@acme.com'
+  billingEmail: 'billing@acme.com',
+  currency: 'USD'
 })
 
 console.log('Cliente creado:', customer.data.id)
 ```
+
+<Callout type="info">
+**La dirección es opcional** al crear. Agrégala después cuando se necesite para cálculo de impuestos o antes de generar facturas con requisitos fiscales.
+</Callout>
+
+### Vincular con Tu Sistema
+
+Usa `externalId` para conectar clientes de Commet con tu base de datos de usuarios existente:
+
+```typescript
+const customer = await commet.customers.create({
+  externalId: user.id, // ID de usuario de tu sistema
+  legalName: 'Acme Corporation',
+  billingEmail: user.email,
+  currency: 'USD'
+})
+
+// Después, busca por tu ID sin almacenar el de Commet
+const customers = await commet.customers.list({
+  externalId: user.id
+})
+```
+
+<Callout type="info">
+**External ID** es único por organización. Úsalo para sincronizar clientes sin almacenar IDs de Commet en tu base de datos.
+</Callout>
 
 ### Recuperar Cliente
 
@@ -76,11 +93,23 @@ console.log(`Encontrados ${customers.data.length} clientes`)
 
 ## Configuración de Impuestos
 
-Configura manejo de impuestos basado en ubicación del cliente:
+Configura manejo de impuestos según requisitos del negocio. Por defecto es `NOT_APPLICABLE` (estándar B2B).
 
-<Tabs items={['Gravado', 'Exento de Impuestos', 'Cargo Inverso', 'No Aplicable']}>
+<Tabs items={['No Aplicable', 'Gravado', 'Exento de Impuestos', 'Cargo Inverso']}>
+<Tab value="No Aplicable">
+```typescript
+// Por defecto para B2B - cliente maneja cumplimiento fiscal
+await commet.customers.create({
+  legalName: 'Business Client Corp',
+  billingEmail: 'billing@client.com',
+  currency: 'USD'
+  // taxStatus: 'NOT_APPLICABLE' (por defecto)
+})
+```
+</Tab>
 <Tab value="Gravado">
 ```typescript
+// Plataforma recauda y remite impuestos - requiere dirección
 await commet.customers.create({
   legalName: 'Standard Corp',
   taxStatus: 'TAXED',
@@ -97,6 +126,7 @@ await commet.customers.create({
 </Tab>
 <Tab value="Exento de Impuestos">
 ```typescript
+// Entidad exenta de impuestos
 await commet.customers.create({
   legalName: 'Organización Sin Fines de Lucro',
   taxStatus: 'TAX_EXEMPT',
@@ -109,6 +139,7 @@ await commet.customers.create({
 </Tab>
 <Tab value="Cargo Inverso">
 ```typescript
+// Mecanismo de cargo inverso de la UE
 await commet.customers.create({
   legalName: 'European Business Ltd',
   taxStatus: 'REVERSE_CHARGE',
@@ -122,16 +153,11 @@ await commet.customers.create({
 })
 ```
 </Tab>
-<Tab value="No Aplicable">
-```typescript
-await commet.customers.create({
-  legalName: 'Organización Internacional',
-  taxStatus: 'NOT_APPLICABLE',
-  currency: 'USD'
-})
-```
-</Tab>
 </Tabs>
+
+<Callout type="warning">
+**Validación fiscal:** Clientes con `taxStatus: 'TAXED'` requieren dirección completa antes de facturar. Agrega dirección durante onboarding o antes del primer ciclo de facturación.
+</Callout>
 
 ## Soporte Multi-Moneda
 
@@ -184,61 +210,84 @@ const brlCustomer = await commet.customers.create({
 
 ```typescript
 await commet.customers.create({
-  legalName: 'Nombre de Empresa Requerido',  // Requerido
-  currency: 'USD',                          // Opcional, por defecto basado en dirección
-  address: {                                // Requerido
-    line1: '123 Required St',               // Requerido
-    city: 'Ciudad Requerida',               // Requerido
-    postalCode: '12345',                    // Requerido
-    country: 'US'                           // Requerido (formato ISO-2)
+  legalName: 'Nombre de Empresa Requerido'  // Único campo requerido
+  // Todo lo demás es opcional
+})
+```
+
+### Agregar Dirección Después
+
+Completa el perfil del cliente cuando la información esté disponible:
+
+```typescript
+await commet.customers.update(customerId, {
+  address: {
+    line1: '123 Business St',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'US'  // Formato ISO-2
   }
 })
 ```
 
-### Campos Opcionales
+### Ejemplo Completo
 
 ```typescript
 await commet.customers.create({
+  externalId: 'usr_123',                    // Tu ID de usuario
   legalName: 'Full Example Corp',
-  displayName: 'Full Example',              // Nombre de visualización opcional
-  domain: 'example.com',                    // Dominio de empresa opcional
-  website: 'https://example.com',           // Sitio web opcional
-  taxStatus: 'TAXED',                       // Opcional, por defecto TAXED
+  displayName: 'Full Example',
+  domain: 'example.com',
+  website: 'https://example.com',
+  taxStatus: 'NOT_APPLICABLE',              // Por defecto
   currency: 'USD',
   address: {
     line1: '123 Business St',
-    line2: 'Suite 100',                     // Opcional
+    line2: 'Suite 100',
     city: 'San Francisco',
-    state: 'CA',                            // Requerido para US/CA
+    state: 'CA',
     postalCode: '94105',
     country: 'US',
-    region: 'North America'                 // Opcional
+    region: 'North America'
   },
-  billingEmail: 'billing@example.com',      // Opcional
-  paymentTerms: 'net_30',                   // Opcional
-  timezone: 'America/Los_Angeles',          // Opcional
-  language: 'en',                           // Opcional
-  industry: 'software',                     // Opcional
-  employeeCount: '11-50',                   // Opcional
-  metadata: {                               // Datos personalizados opcionales
-    salesforce_id: 'sf_123',
-    customer_tier: 'enterprise'
+  billingEmail: 'billing@example.com',
+  paymentTerms: 'net_30',
+  timezone: 'America/Los_Angeles',
+  language: 'en',
+  industry: 'software',
+  employeeCount: '11-50',
+  metadata: {
+    user_id: 'usr_123',
+    plan: 'enterprise'
   }
 })
 ```
 
 ## Características Avanzadas
 
+### Buscar por External ID
+
+Encuentra clientes usando el identificador de tu sistema:
+
+```typescript
+const customers = await commet.customers.list({
+  externalId: user.id
+})
+
+const customer = customers.data[0]
+```
+
 ### Buscar Clientes
 
-Busca clientes por nombre u otros criterios:
+Filtra clientes por atributos:
 
 ```typescript
 const results = await commet.customers.list({
-  search: 'acme',
   currency: 'USD',
-  taxStatus: 'TAXED',
-  isActive: true
+  taxStatus: 'NOT_APPLICABLE',
+  isActive: true,
+  limit: 50
 })
 ```
 
@@ -298,26 +347,30 @@ try {
 
 ## Mejores Prácticas
 
-### Direcciones Completas
+### Onboarding Progresivo
 
-Siempre incluye direcciones completas para cálculo preciso de impuestos:
+Crea clientes inmediatamente, agrega detalles después:
 
 ```typescript
-// ✅ Dirección completa
-address: {
-  line1: '123 Business St',
-  line2: 'Suite 100',    // Opcional pero útil
-  city: 'San Francisco',
-  state: 'CA',           // Requerido para US/CA
-  postalCode: '94105',
-  country: 'US'          // Formato ISO-2
-}
+// Paso 1: Registro inicial
+const customer = await commet.customers.create({
+  externalId: user.id,
+  legalName: user.companyName,
+  billingEmail: user.email,
+  currency: 'USD'
+})
 
-// ❌ Dirección incompleta
-address: {
-  line1: '123 Business St',
-  country: 'US' // Falta ciudad y código postal requeridos
-}
+// Paso 2: Completa perfil cuando la información esté disponible
+await commet.customers.update(customer.data.id, {
+  address: {
+    line1: '123 Business St',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'US'
+  },
+  taxStatus: 'TAXED'  // Habilita cálculo de impuestos
+})
 ```
 
 ### Consistencia de Moneda
