@@ -1,6 +1,6 @@
 ---
 title: Entornos
-description: Gestiona entornos de desarrollo y producción de manera efectiva
+description: Gestiona entornos sandbox y producción de manera efectiva
 ---
 
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
@@ -8,101 +8,83 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 # Entornos
 
-Commet SDK proporciona gestión robusta de entornos con detección automática, modos de desarrollo seguros y configuración flexible para diferentes etapas de despliegue.
+Commet SDK proporciona gestión robusta de entornos con servidores sandbox y producción separados para pruebas seguras y operaciones de facturación en vivo.
 
 <Callout type="info">
-**Seguro por Defecto:** El SDK automáticamente previene que los datos de desarrollo afecten la facturación de producción.
+**Seguro por Defecto:** El entorno sandbox se usa por defecto para prevenir cambios accidentales a datos de producción.
 </Callout>
 
 ## Tipos de Entorno
 
 El SDK soporta dos entornos principales:
 
-### Entorno de Desarrollo
+### Entorno Sandbox (Por Defecto)
 
-Entorno seguro para desarrollo y pruebas:
+Entorno seguro para desarrollo y pruebas con llamadas API reales al servidor sandbox:
 
 ```typescript
-// Automáticamente detectado cuando NODE_ENV=development
 const commet = new Commet({
   apiKey: 'ck_xxx1234567890abcdef',
-  // Entorno: 'development' (auto-detectado)
-  // Modo dev: Habilitado (logs en lugar de llamadas API)
+  environment: 'sandbox' // Por defecto - usa sandbox.commet.co
 })
 
-console.log(commet.getEnvironment()) // 'development'
-console.log(commet.isDevelopment())  // true
+console.log(commet.getEnvironment()) // 'sandbox'
+console.log(commet.isSandbox())      // true
+console.log(commet.isProduction())   // false
 ```
 
 ### Entorno de Producción
 
-Entorno en vivo con llamadas API reales:
+Entorno en vivo para operaciones de facturación reales:
 
 ```typescript
-// Automáticamente detectado cuando NODE_ENV=production
 const commet = new Commet({
   apiKey: 'ck_xxx1234567890abcdef',
-  // Entorno: 'production' (auto-detectado)
-  // Modo dev: Deshabilitado (llamadas API reales)
+  environment: 'production' // Usa billing.commet.co
 })
 
 console.log(commet.getEnvironment()) // 'production'
+console.log(commet.isSandbox())      // false
 console.log(commet.isProduction())   // true
 ```
 
-## Detección de Entorno
+## Configuración de Entorno
 
-### Reglas de Detección Automática
+### Configuración Explícita
 
-El SDK detecta entorno de desarrollo cuando:
+Siempre especifica tu entorno explícitamente para claridad:
 
-**Entorno Node.js:**
-- `process.env.NODE_ENV === 'development'`
-- `process.env.NODE_ENV === 'test'`
-
-**Entorno Navegador:**
-- `hostname === 'localhost'`
-- `hostname === '127.0.0.1'`
-- `hostname.startsWith('192.168.')`
-- `hostname.startsWith('10.')`
-- `hostname.endsWith('.local')`
-
-Todos los otros casos por defecto son producción.
-
-### Sobrescritura Manual
-
-Sobrescribe la detección automática cuando sea necesario:
-
-<Tabs items={['Entorno Explícito', 'Auto Detección', 'Verificar Entorno']}>
-<Tab value="Entorno Explícito">
+<Tabs items={['Sandbox', 'Producción', 'Verificar Entorno']}>
+<Tab value="Sandbox">
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: 'development', // Forzar modo desarrollo
+  environment: 'sandbox', // Sandbox explícito
   debug: true
 })
 
-// Siempre usa comportamiento de desarrollo sin importar NODE_ENV
+// Usa sandbox.commet.co
 ```
 </Tab>
-<Tab value="Auto Detección">
+<Tab value="Producción">
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: 'auto' // Comportamiento por defecto
+  environment: 'production' // Producción explícita
 })
 
-// Usa detección automática basada en NODE_ENV y hostname
+// Usa billing.commet.co
 ```
 </Tab>
 <Tab value="Verificar Entorno">
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!
+  // Por defecto es 'sandbox' si no se especifica
 })
 
 console.log('Entorno:', commet.getEnvironment())
-console.log('Es Desarrollo:', commet.isDevelopment())
+console.log('Es Sandbox:', commet.isSandbox())
 console.log('Es Producción:', commet.isProduction())
 ```
 </Tab>

@@ -1,6 +1,6 @@
 ---
 title: Autenticación
-description: Autenticación segura con clave API y detección automática de entorno
+description: Autenticación segura con clave API en entornos sandbox y producción
 ---
 
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 # Autenticación
 
-Commet SDK utiliza autenticación por clave API con detección automática de entorno y validación.
+Commet SDK utiliza autenticación por clave API con entornos sandbox y producción para pruebas seguras y facturación en vivo.
 
 ## Formato de Clave API
 
@@ -42,7 +42,7 @@ import { Commet } from 'commet'
 
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: 'production',  // o 'development', 'auto'
+  environment: 'sandbox',  // 'sandbox' (por defecto) o 'production'
   debug: true,
   timeout: 30000,
   retries: 3
@@ -64,30 +64,37 @@ export const commet = new Commet({
 </Tab>
 </Tabs>
 
-## Detección de Entorno
+## Configuración de Entorno
 
-El SDK detecta automáticamente tu entorno:
+Elige entre entornos sandbox y producción:
 
-### Detección Automática
+### Entorno Sandbox (Por Defecto)
+
+Entorno seguro para desarrollo y pruebas con llamadas API reales al servidor sandbox:
 
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: 'auto', // Comportamiento por defecto
+  environment: 'sandbox' // Por defecto - usa sandbox.commet.co
 })
 
-console.log(commet.getEnvironment()) // 'development' o 'production'
+console.log(commet.getEnvironment()) // 'sandbox'
+console.log(commet.isSandbox()) // true
 ```
 
-### Reglas de Detección
+### Entorno de Producción
 
-El SDK detecta entorno de desarrollo cuando:
+Entorno en vivo para operaciones de facturación reales:
 
-- `NODE_ENV` es `development` o `test`
-- Se ejecuta en `localhost`, `127.0.0.1`, o redes locales
-- El hostname termina en `.local`
+```typescript
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'production' // Usa billing.commet.co
+})
 
-Todos los otros casos por defecto son modo producción.
+console.log(commet.getEnvironment()) // 'production'
+console.log(commet.isProduction()) // true
+```
 
 ## Opciones de Configuración
 
@@ -95,28 +102,29 @@ Referencia completa de configuración:
 
 ```typescript
 interface CommetConfig {
-  apiKey: string             // Requerido: Tu clave API
-  environment?: 'auto' | Environment // Auto-detectar o explícito
-  debug?: boolean            // Habilitar logging detallado
-  timeout?: number          // Timeout de petición (ms)
-  retries?: number          // Máximo intentos de reintento
+  apiKey: string                         // Requerido: Tu clave API
+  environment?: 'sandbox' | 'production' // Por defecto: 'sandbox'
+  debug?: boolean                        // Habilitar logging detallado
+  timeout?: number                       // Timeout de petición (ms)
+  retries?: number                       // Máximo intentos de reintento
 }
 ```
 
 ## Modo Debug
 
-Habilita logging de debug para desarrollo:
+Habilita logging de debug para ver información detallada de peticiones/respuestas:
 
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
+  environment: 'sandbox',
   debug: true
 })
 
 // Salida en consola:
-// [Commet SDK] Inicializado en modo desarrollo
+// [Commet SDK] Inicializado en modo sandbox
 // Clave API: ck_xxx12345...
-// URL Base: https://api.commet.co
+// URL Base: https://sandbox.commet.co
 ```
 
 ## Validación
@@ -151,7 +159,8 @@ import { Commet } from 'commet'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  debug: process.env.NODE_ENV === 'development'
+  environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+  debug: process.env.NODE_ENV !== 'production'
 })
 ```
 
@@ -187,7 +196,7 @@ const commet = new Commet({
 
 ## Resolución de Problemas
 
-### Verificar Detección de Entorno
+### Verificar Configuración de Entorno
 
 ```typescript
 const commet = new Commet({
@@ -196,7 +205,7 @@ const commet = new Commet({
 })
 
 console.log('Entorno:', commet.getEnvironment())
-console.log('Es Desarrollo:', commet.isDevelopment())
+console.log('Es Sandbox:', commet.isSandbox())
 console.log('Es Producción:', commet.isProduction())
 ```
 
@@ -213,9 +222,9 @@ if (!apiKey?.startsWith('ck_')) {
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
   <div className="border rounded-lg p-4">
-    <h3 className="font-semibold mt-0">Modo Dev</h3>
-    <p className="text-sm text-muted-foreground">Desarrollo seguro con logging de eventos</p>
-    <p className="text-sm">[Aprende modo dev →](/library/core/dev-mode)</p>
+    <h3 className="font-semibold mt-0">Entornos</h3>
+    <p className="text-sm text-muted-foreground">Gestionar entornos sandbox y producción</p>
+    <p className="text-sm">[Aprende entornos →](/library/core/environments)</p>
   </div>
   
   <div className="border rounded-lg p-4">

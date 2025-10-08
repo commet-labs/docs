@@ -2,5 +2,5 @@
   "title": "Core",
   "description": "Conceptos y patrones fundamentales del SDK",
   "icon": "BookOpen",
-  "pages": ["authentication", "dev-mode", "error-handling", "environments"]
+  "pages": ["authentication", "environments", "error-handling"]
 }
