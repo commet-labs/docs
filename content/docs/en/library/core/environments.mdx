@@ -1,6 +1,6 @@
 ---
 title: Environments
-description: Manage development and production environments effectively
+description: Manage sandbox and production environments effectively
 ---
 
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
@@ -8,101 +8,83 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 # Environments
 
-Commet SDK provides robust environment management with automatic detection, safe development modes, and flexible configuration for different deployment stages.
+Commet SDK provides robust environment management with separate sandbox and production servers for safe testing and live billing operations.
 
 <Callout type="info">
-**Safe by Default:** The SDK automatically prevents development data from affecting production billing.
+**Safe by Default:** Sandbox environment is used by default to prevent accidental changes to production data.
 </Callout>
 
 ## Environment Types
 
 The SDK supports two primary environments:
 
-### Development Environment
+### Sandbox Environment (Default)
 
-Safe environment for development and testing:
+Safe environment for development and testing with real API calls to sandbox server:
 
 ```typescript
-// Automatically detected when NODE_ENV=development
 const commet = new Commet({
   apiKey: 'ck_xxx1234567890abcdef',
-  // Environment: 'development' (auto-detected)
-  // Dev mode: Enabled (logs instead of API calls)
+  environment: 'sandbox' // Default - uses sandbox.commet.co
 })
 
-console.log(commet.getEnvironment()) // 'development'
-console.log(commet.isDevelopment())  // true
+console.log(commet.getEnvironment()) // 'sandbox'
+console.log(commet.isSandbox())      // true
+console.log(commet.isProduction())   // false
 ```
 
 ### Production Environment
 
-Live environment with real API calls:
+Live environment for real billing operations:
 
 ```typescript
-// Automatically detected when NODE_ENV=production
 const commet = new Commet({
   apiKey: 'ck_xxx1234567890abcdef',
-  // Environment: 'production' (auto-detected)
-  // Dev mode: Disabled (real API calls)
+  environment: 'production' // Uses billing.commet.co
 })
 
 console.log(commet.getEnvironment()) // 'production'
+console.log(commet.isSandbox())      // false
 console.log(commet.isProduction())   // true
 ```
 
-## Environment Detection
+## Environment Configuration
 
-### Automatic Detection Rules
+### Explicit Configuration
 
-The SDK detects development environment when:
+Always specify your environment explicitly for clarity:
 
-**Node.js Environment:**
-- `process.env.NODE_ENV === 'development'`
-- `process.env.NODE_ENV === 'test'`
-
-**Browser Environment:**
-- `hostname === 'localhost'`
-- `hostname === '127.0.0.1'`
-- `hostname.startsWith('192.168.')`
-- `hostname.startsWith('10.')`
-- `hostname.endsWith('.local')`
-
-All other cases default to production.
-
-### Manual Override
-
-Override automatic detection when needed:
-
-<Tabs items={['Explicit Environment', 'Auto Detection', 'Environment Check']}>
-<Tab value="Explicit Environment">
+<Tabs items={['Sandbox', 'Production', 'Environment Check']}>
+<Tab value="Sandbox">
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: 'development', // Force development mode
+  environment: 'sandbox', // Explicit sandbox
   debug: true
 })
 
-// Always uses development behavior regardless of NODE_ENV
+// Uses sandbox.commet.co
 ```
 </Tab>
-<Tab value="Auto Detection">
+<Tab value="Production">
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: 'auto' // Default behavior
+  environment: 'production' // Explicit production
 })
 
-// Uses automatic detection based on NODE_ENV and hostname
+// Uses billing.commet.co
 ```
 </Tab>
 <Tab value="Environment Check">
 ```typescript
 const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!
+  // Defaults to 'sandbox' if not specified
 })
 
 console.log('Environment:', commet.getEnvironment())
-console.log('Is Development:', commet.isDevelopment())
+console.log('Is Sandbox:', commet.isSandbox())
 console.log('Is Production:', commet.isProduction())
 ```
 </Tab>
@@ -114,12 +96,12 @@ console.log('Is Production:', commet.isProduction())
 
 Set up environment-specific configurations:
 
-<Tabs items={['Development', 'Production', 'Multi-Environment']}>
-<Tab value="Development">
+<Tabs items={['Sandbox', 'Production', 'Multi-Environment']}>
+<Tab value="Sandbox">
 ```bash title=".env.local"
 NODE_ENV=development
 COMMET_API_KEY=ck_xxx1234567890abcdef
-COMMET_DEBUG=true
+COMMET_ENV=sandbox
 ```
 
 ```typescript title="lib/commet.ts"
@@ -127,7 +109,8 @@ import { Commet } from 'commet'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  debug: process.env.COMMET_DEBUG === 'true'
+  environment: 'sandbox',
+  debug: true
 })
 ```
 </Tab>
@@ -135,12 +118,13 @@ export const commet = new Commet({
 ```bash title=".env.production"
 NODE_ENV=production
 COMMET_API_KEY=ck_xxx1234567890abcdef
+COMMET_ENV=production
 ```
 
 ```typescript title="lib/commet.ts"
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  // debug: false (default in production)
+  environment: 'production'
 })
 ```
 </Tab>
@@ -149,20 +133,18 @@ export const commet = new Commet({
 const getConfig = () => {
   const env = process.env.NODE_ENV
   
-  switch (env) {
-    case 'development':
-      return {
-        apiKey: process.env.COMMET_API_KEY!,
-        debug: true,
-        environment: 'development' as const
-      }
-    case 'production':
-      return {
-        apiKey: process.env.COMMET_API_KEY!,
-        debug: false
-      }
-    default:
-      throw new Error(`Unknown environment: ${env}`)
+  if (env === 'production') {
+    return {
+      apiKey: process.env.COMMET_API_KEY!,
+      environment: 'production' as const,
+      debug: false
+    }
+  }
+  
+  return {
+    apiKey: process.env.COMMET_API_KEY!,
+    environment: 'sandbox' as const,
+    debug: true
   }
 }
 
@@ -186,8 +168,8 @@ const isDev = process.env.NODE_ENV === 'development'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  debug: isDev,
-  // Automatic dev mode in development
+  environment: 'sandbox',
+  debug: isDev
 })
 ```
 </Tab>
@@ -198,7 +180,7 @@ const isPreview = process.env.VERCEL_ENV === 'preview'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: isPreview ? 'development' : 'auto',
+  environment: isPreview ? 'sandbox' : 'production',
   debug: isPreview
 })
 ```
@@ -208,7 +190,7 @@ export const commet = new Commet({
 // Production-ready configuration
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  // Uses production mode automatically
+  environment: 'production',
   timeout: 30000,
   retries: 3
 })
@@ -218,37 +200,42 @@ export const commet = new Commet({
 
 ## Environment-Specific Behavior
 
-### Development Mode Features
+### Sandbox Environment
 
-When in development environment:
+Safe testing environment with real API calls to sandbox server:
 
 ```typescript
-// Logs events instead of sending API requests
-await commet.usage.events.create({
-  eventType: 'api_call',
-  customerId: 'cus_dev_123'
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'sandbox'
 })
 
-// Console output:
-// [Commet SDK] Dev mode
-// Method: POST
-// Endpoint: https://api.commet.co/api/usage/events
-// Data: { eventType: 'api_call', customerId: 'cus_dev_123' }
-// Request logged, not sent to server
+// Makes real API requests to sandbox.commet.co
+const result = await commet.usage.events.create({
+  eventType: 'api_call',
+  customerId: 'cus_sandbox_123'
+})
+
+console.log('Event created in sandbox:', result.data.id)
 ```
 
-### Production Mode Features
+### Production Environment
 
-When in production environment:
+Live billing environment with real API calls to production server:
 
 ```typescript
-// Makes real API requests
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'production'
+})
+
+// Makes real API requests to billing.commet.co
 const result = await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_prod_456'
 })
 
-console.log('Event created:', result.data.id) // Real event ID
+console.log('Event created in production:', result.data.id)
 ```
 
 ## Testing Across Environments
@@ -265,7 +252,7 @@ const testEnvironment = () => {
   })
   
   console.log('Environment:', commet.getEnvironment())
-  console.log('Is Development:', commet.isDevelopment())
+  console.log('Is Sandbox:', commet.isSandbox())
   console.log('Is Production:', commet.isProduction())
   console.log('NODE_ENV:', process.env.NODE_ENV)
   
@@ -290,19 +277,19 @@ Keep environments completely separate:
 const getCommetClient = () => {
   const env = process.env.NODE_ENV
   
-  if (env === 'development') {
+  if (env === 'production') {
     return new Commet({
       apiKey: process.env.COMMET_API_KEY!,
-      debug: true
-    })
-  } else if (env === 'production') {
-    return new Commet({
-      apiKey: process.env.COMMET_API_KEY!,
+      environment: 'production',
       timeout: 30000
     })
   }
   
-  throw new Error(`Unknown environment: ${env}`)
+  return new Commet({
+    apiKey: process.env.COMMET_API_KEY!,
+    environment: 'sandbox',
+    debug: true
+  })
 }
 ```
 
@@ -340,6 +327,7 @@ export const commet = new Commet({
 Before deploying to production:
 
 - [ ] Set `NODE_ENV=production`
+- [ ] Set `environment: 'production'` explicitly
 - [ ] Use production API key
 - [ ] Disable debug logging
 - [ ] Configure appropriate timeouts and retries
@@ -377,9 +365,9 @@ echo "✅ Environment configuration validated"
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
   <div className="border rounded-lg p-4">
-    <h3 className="font-semibold mt-0">Installation Guides</h3>
-    <p className="text-sm text-muted-foreground">Framework-specific setup</p>
-    <p className="text-sm">[Installation →](/library/installation/nextjs)</p>
+    <h3 className="font-semibold mt-0">Authentication</h3>
+    <p className="text-sm text-muted-foreground">Configure API keys and validation</p>
+    <p className="text-sm">[Authentication →](/library/core/authentication)</p>
   </div>
   
   <div className="border rounded-lg p-4">
