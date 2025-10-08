@@ -101,7 +101,7 @@ Configura configuraciones específicas por entorno:
 ```bash title=".env.local"
 NODE_ENV=development
 COMMET_API_KEY=ck_xxx1234567890abcdef
-COMMET_DEBUG=true
+COMMET_ENV=sandbox
 ```
 
 ```typescript title="lib/commet.ts"
@@ -109,7 +109,8 @@ import { Commet } from 'commet'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  debug: process.env.COMMET_DEBUG === 'true'
+  environment: 'sandbox',
+  debug: true
 })
 ```
 </Tab>
@@ -117,12 +118,13 @@ export const commet = new Commet({
 ```bash title=".env.production"
 NODE_ENV=production
 COMMET_API_KEY=ck_xxx1234567890abcdef
+COMMET_ENV=production
 ```
 
 ```typescript title="lib/commet.ts"
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  // debug: false (por defecto en producción)
+  environment: 'production'
 })
 ```
 </Tab>
@@ -131,20 +133,18 @@ export const commet = new Commet({
 const getConfig = () => {
   const env = process.env.NODE_ENV
   
-  switch (env) {
-    case 'development':
-      return {
-        apiKey: process.env.COMMET_API_KEY!,
-        debug: true,
-        environment: 'development' as const
-      }
-    case 'production':
-      return {
-        apiKey: process.env.COMMET_API_KEY!,
-        debug: false
-      }
-    default:
-      throw new Error(`Entorno desconocido: ${env}`)
+  if (env === 'production') {
+    return {
+      apiKey: process.env.COMMET_API_KEY!,
+      environment: 'production' as const,
+      debug: false
+    }
+  }
+  
+  return {
+    apiKey: process.env.COMMET_API_KEY!,
+    environment: 'sandbox' as const,
+    debug: true
   }
 }
 
@@ -168,8 +168,8 @@ const isDev = process.env.NODE_ENV === 'development'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  debug: isDev,
-  // Modo dev automático en desarrollo
+  environment: 'sandbox',
+  debug: isDev
 })
 ```
 </Tab>
@@ -180,7 +180,7 @@ const isPreview = process.env.VERCEL_ENV === 'preview'
 
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  environment: isPreview ? 'development' : 'auto',
+  environment: isPreview ? 'sandbox' : 'production',
   debug: isPreview
 })
 ```
@@ -190,7 +190,7 @@ export const commet = new Commet({
 // Configuración lista para producción
 export const commet = new Commet({
   apiKey: process.env.COMMET_API_KEY!,
-  // Usa modo producción automáticamente
+  environment: 'production',
   timeout: 30000,
   retries: 3
 })
@@ -200,37 +200,42 @@ export const commet = new Commet({
 
 ## Comportamiento Específico por Entorno
 
-### Características del Modo Desarrollo
+### Entorno Sandbox
 
-Cuando está en entorno de desarrollo:
+Entorno de pruebas seguro con llamadas API reales al servidor sandbox:
 
 ```typescript
-// Registra eventos en lugar de enviar peticiones API
-await commet.usage.events.create({
-  eventType: 'api_call',
-  customerId: 'cus_dev_123'
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'sandbox'
 })
 
-// Salida en consola:
-// [Commet SDK] Modo dev
-// Método: POST
-// Endpoint: https://api.commet.co/api/usage/events
-// Datos: { eventType: 'api_call', customerId: 'cus_dev_123' }
-// Petición registrada, no enviada al servidor
+// Hace peticiones API reales a sandbox.commet.co
+const result = await commet.usage.events.create({
+  eventType: 'api_call',
+  customerId: 'cus_sandbox_123'
+})
+
+console.log('Evento creado en sandbox:', result.data.id)
 ```
 
-### Características del Modo Producción
+### Entorno de Producción
 
-Cuando está en entorno de producción:
+Entorno en vivo con llamadas API reales al servidor de producción:
 
 ```typescript
-// Hace peticiones API reales
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!,
+  environment: 'production'
+})
+
+// Hace peticiones API reales a billing.commet.co
 const result = await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_prod_456'
 })
 
-console.log('Evento creado:', result.data.id) // ID de evento real
+console.log('Evento creado en producción:', result.data.id)
 ```
 
 ## Pruebas Across Entornos
@@ -247,7 +252,7 @@ const testEnvironment = () => {
   })
   
   console.log('Entorno:', commet.getEnvironment())
-  console.log('Es Desarrollo:', commet.isDevelopment())
+  console.log('Es Sandbox:', commet.isSandbox())
   console.log('Es Producción:', commet.isProduction())
   console.log('NODE_ENV:', process.env.NODE_ENV)
   
@@ -272,19 +277,19 @@ Mantén entornos completamente separados:
 const getCommetClient = () => {
   const env = process.env.NODE_ENV
   
-  if (env === 'development') {
+  if (env === 'production') {
     return new Commet({
       apiKey: process.env.COMMET_API_KEY!,
-      debug: true
-    })
-  } else if (env === 'production') {
-    return new Commet({
-      apiKey: process.env.COMMET_API_KEY!,
+      environment: 'production',
       timeout: 30000
     })
   }
   
-  throw new Error(`Entorno desconocido: ${env}`)
+  return new Commet({
+    apiKey: process.env.COMMET_API_KEY!,
+    environment: 'sandbox',
+    debug: true
+  })
 }
 ```
 
@@ -322,6 +327,7 @@ export const commet = new Commet({
 Antes de desplegar a producción:
 
 - [ ] Configurar `NODE_ENV=production`
+- [ ] Establecer `environment: 'production'` explícitamente
 - [ ] Usar clave API de producción
 - [ ] Deshabilitar logging de debug
 - [ ] Configurar timeouts y reintentos apropiados
@@ -359,14 +365,14 @@ echo "✅ Configuración de entorno validada"
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
   <div className="border rounded-lg p-4">
-    <h3 className="font-semibold mt-0">Guías de Instalación</h3>
-    <p className="text-sm text-muted-foreground">Configuración específica por framework</p>
-    <p className="text-sm">[Instalación →](/library/installation/nextjs)</p>
+    <h3 className="font-semibold mt-0">Autenticación</h3>
+    <p className="text-sm text-muted-foreground">Configurar claves API y validación</p>
+    <p className="text-sm">[Autenticación →](/library/core/authentication)</p>
   </div>
   
   <div className="border rounded-lg p-4">
     <h3 className="font-semibold mt-0">Eventos de Uso</h3>
-    <p className="text-sm text-muted-foreground">Comenzar a rastrear uso across entornos</p>
+    <p className="text-sm text-muted-foreground">Comenzar a rastrear uso en diferentes entornos</p>
     <p className="text-sm">[Rastrear uso →](/library/features/usage-events)</p>
   </div>
 </div>
