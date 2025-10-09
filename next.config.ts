@@ -17,17 +17,17 @@ const config: NextConfig = {
     return [
       {
         source: "/",
-        destination: "/docs/library/quickstart",
+        destination: "/docs",
         permanent: true,
       },
       {
         source: "/es",
-        destination: "/es/docs/library/quickstart",
+        destination: "/es/docs",
         permanent: true,
       },
       {
         source: "/pt",
-        destination: "/pt/docs/library/quickstart",
+        destination: "/pt/docs",
         permanent: true,
       },
     ];

@@ -1,17 +1,15 @@
 ---
 title: Onboarding
-description: A quick guide to start with Commet
+description: In this guide you'll find the steps to follow if it's your first time accessing Commet and you want to test its core functionalities.
+
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout'
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-# Onboarding
-
-In this guide you'll find the steps to follow if it's your first time accessing Commet and you want to test its core functionalities.
 
 <Callout type="info">
-Remember that to start operating with Commet in a real environment, you'll need to speak with our team to complete the legal onboarding and select a plan from our pricing. Our team will help you throughout the entire process.
+Remember that to start operating with Commet in a production environment, you'll need to speak with our team to complete the legal onboarding and select a plan from our pricing. Our team will help you throughout the entire process.
 </Callout>
 
 <Steps>
@@ -19,13 +17,25 @@ Remember that to start operating with Commet in a real environment, you'll need 
 
 ### 1. Create an Account
 
-Go to https://billing.commet.co. If it's your first time accessing, you'll need to complete some basic information about your company.
+Go to https://sandbox.commet.co. If it's your first time accessing, you'll need to complete some basic information about your company.
 
 </Step>
 
 <Step>
 
-### 2. Create or Import a Customer
+### 2. Create Your Tax Rates
+
+All Commet products must have a product type and an associated tax rate. This allows us to calculate taxes directly. You'll need to create at least one product category and one tax rate.
+
+<Callout type="info">
+Don't worry, you can always mark your customer as exempt to avoid calculating taxes, and they won't appear on the invoice.
+</Callout>
+
+</Step>
+
+<Step>
+
+### 3. Create or Import a Customer
 
 As a first step, you'll need to create a customer from the Customer tab. There you'll define their billing information, currency, and conditions.
 
@@ -33,20 +43,12 @@ As a first step, you'll need to create a customer from the Customer tab. There y
 
 <Step>
 
-### 3. Usage Events and Metrics
+### 4. Create events types and metrics
 
-If your pricing is based on events or seats, you can use our API to send us events in real time. Then you'll need to create metrics, which are simply ways to group events to later feed the products that your customers will have.
-
-</Step>
-
-<Step>
-
-### 4. Create Your Tax Rates
-
-All Commet products must have a product type and an associated tax rate. This allows us to calculate taxes directly. You'll need to create at least one product category and one tax rate.
+You need to create event types or seat types, which define the kinds of usage you want to track. These events must then be grouped into metrics, as metrics are what get associated with products later in the process.
 
 <Callout type="info">
-Don't worry, you can always mark your customer as exempt to avoid calculating taxes, and they won't appear on the invoice.
+Later, you'll be able to stream real events via API to test with real data, but for this onboarding you can leave this section empty—sandbox mode lets you simulate everything with test data. The goal of this onboarding is to show you the full flow, all the way to generating a final invoice.
 </Callout>
 
 </Step>
@@ -59,17 +61,10 @@ From the Products tab, create your products, whether they're one-time, recurring
 
 </Step>
 
+
 <Step>
 
 ### 6. Create an Agreement
-
-Create an agreement to establish the terms and conditions for your customer's subscription or purchase.
-
-</Step>
-
-<Step>
-
-### 7. Create an Agreement
 
 Agreements are where all the conditions agreed upon with your customer come together. Each agreement can have different phases and will determine What and How we will charge our customers.
 
@@ -77,9 +72,9 @@ Agreements are where all the conditions agreed upon with your customer come toge
 
 <Step>
 
-### 8. Invoice Generation
+### 7. Invoice Generation
 
-When the billing date arrives, an invoice will be generated. These invoices will be ready for you to view.
+At this stage, you'll be able to simulate invoices to see exactly how an invoice for this agreement would look. When the billing date set in the agreement arrives, invoices will be generated using real data, if available.
 
 <Callout type="warning">
 You won't be able to send or download them if you don't have an account activated by our team.
@@ -89,9 +84,15 @@ You won't be able to send or download them if you don't have an account activate
 
 <Step>
 
-### 9. Talk to Our Team and Start Your Assisted Migration
+### 8. Next Steps
 
-[Book a slot with our team](https://cal.com/guido-irigoyen/onboarding-meeting) so we can help you find the best plan for you. Our team will handle the migration of all your data so you can start operating with Commet as soon as possible.
+At this point, you have two options:
+
+**Option A: Get a Production Account**
+[Book a slot with our team](https://cal.com/guido-irigoyen/onboarding-meeting) so we can help you find the best plan for you. Our team will handle the migration of all your data so you can start operating with Commet in production as soon as possible.
+
+**Option B: Test with Real Data in Sandbox**
+Go to the API Keys section and start integrating the SDK to try Commet sandbox with real data. Check out our [Quick Start guide](/library/quickstart) to get up and running in under 5 minutes. This allows you to test the full functionality using your own data before moving to production.
 
 </Step>
 </Steps>
