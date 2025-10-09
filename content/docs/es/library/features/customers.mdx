@@ -82,14 +82,45 @@ const updated = await commet.customers.update('cus_A1b2C3d4E5f6G7h8I9j0K1l2', {
 Recupera clientes con filtrado y paginación:
 
 ```typescript
-const customers = await commet.customers.list({
+// Primera página
+const pagina1 = await commet.customers.list({
   currency: 'USD',
   isActive: true,
   limit: 50
 })
 
-console.log(`Encontrados ${customers.data.length} clientes`)
+console.log(`Encontrados ${pagina1.data.length} clientes`)
+console.log(`Más páginas: ${pagina1.hasMore}`)
+
+// Obtener siguiente página si está disponible
+if (pagina1.hasMore) {
+  const pagina2 = await commet.customers.list({
+    currency: 'USD',
+    isActive: true,
+    limit: 50,
+    cursor: pagina1.nextCursor
+  })
+}
+
+// Obtener todos los clientes
+const todosLosClientes = []
+let cursor = undefined
+
+do {
+  const pagina = await commet.customers.list({ 
+    limit: 100, 
+    cursor 
+  })
+  todosLosClientes.push(...pagina.data)
+  cursor = pagina.nextCursor
+} while (pagina.hasMore)
+
+console.log(`Total: ${todosLosClientes.length} clientes`)
 ```
+
+<Callout type="info">
+**Paginación**: Todas las operaciones de listado soportan paginación basada en cursor. Ver [Guía de paginación](/library/core/pagination) para ejemplos detallados.
+</Callout>
 
 ## Configuración de Impuestos
 

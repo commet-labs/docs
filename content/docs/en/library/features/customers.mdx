@@ -82,14 +82,45 @@ const updated = await commet.customers.update('cus_A1b2C3d4E5f6G7h8I9j0K1l2', {
 Retrieve customers with filtering and pagination:
 
 ```typescript
-const customers = await commet.customers.list({
+// First page
+const page1 = await commet.customers.list({
   currency: 'USD',
   isActive: true,
   limit: 50
 })
 
-console.log(`Found ${customers.data.length} customers`)
+console.log(`Found ${page1.data.length} customers`)
+console.log(`More pages: ${page1.hasMore}`)
+
+// Get next page if available
+if (page1.hasMore) {
+  const page2 = await commet.customers.list({
+    currency: 'USD',
+    isActive: true,
+    limit: 50,
+    cursor: page1.nextCursor
+  })
+}
+
+// Fetch all customers
+const allCustomers = []
+let cursor = undefined
+
+do {
+  const page = await commet.customers.list({ 
+    limit: 100, 
+    cursor 
+  })
+  allCustomers.push(...page.data)
+  cursor = page.nextCursor
+} while (page.hasMore)
+
+console.log(`Total: ${allCustomers.length} customers`)
 ```
+
+<Callout type="info">
+**Pagination**: All list operations support cursor-based pagination. See [Pagination guide](/library/core/pagination) for detailed examples.
+</Callout>
 
 ## Tax Configuration
 

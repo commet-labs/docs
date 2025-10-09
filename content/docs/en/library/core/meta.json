@@ -2,5 +2,5 @@
   "title": "Core",
   "description": "Fundamental SDK concepts and patterns",
   "icon": "BookOpen",
-  "pages": ["authentication", "environments", "error-handling"]
+  "pages": ["authentication", "environments", "error-handling", "pagination"]
 }

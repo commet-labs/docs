@@ -175,20 +175,51 @@ console.log(`Admin seats: ${adminSeats.data.admin}`)
 
 ## Seat History
 
-Track seat changes over time:
+Track seat changes over time with pagination:
 
 ```typescript
-const history = await commet.seats.getHistory({
+// First page
+const page1 = await commet.seats.getHistory({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'admin',
   startDate: '2024-01-01',
-  endDate: '2024-01-31'
+  endDate: '2024-01-31',
+  limit: 50
 })
 
-history.data.forEach(event => {
+page1.data.forEach(event => {
   console.log(`${event.timestamp}: ${event.action} ${event.quantity} seats`)
 })
+
+// Get next page if available
+if (page1.hasMore) {
+  const page2 = await commet.seats.getHistory({
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    seatType: 'admin',
+    limit: 50,
+    cursor: page1.nextCursor
+  })
+}
+
+// Fetch all history
+const allHistory = []
+let cursor = undefined
+
+do {
+  const page = await commet.seats.getHistory({ 
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    seatType: 'admin',
+    limit: 100, 
+    cursor 
+  })
+  allHistory.push(...page.data)
+  cursor = page.nextCursor
+} while (page.hasMore)
 ```
+
+<Callout type="info">
+**Pagination**: Seat history supports cursor-based pagination for efficient traversal through change logs. See [Pagination guide](/library/core/pagination) for more details.
+</Callout>
 
 ## Advanced Options
 

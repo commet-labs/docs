@@ -184,10 +184,11 @@ try {
 
 ## Listar Eventos de Uso
 
-Recupera historial de uso para análisis:
+Recupera historial de uso para análisis con paginación:
 
 ```typescript
-const events = await commet.usage.list({
+// Primera página
+const pagina1 = await commet.usage.list({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   eventType: 'api_call',
   startDate: '2024-01-01',
@@ -195,8 +196,39 @@ const events = await commet.usage.list({
   limit: 100
 })
 
-console.log(`Encontrados ${events.data.length} eventos`)
+console.log(`Encontrados ${pagina1.data.length} eventos`)
+console.log(`Más páginas: ${pagina1.hasMore}`)
+
+// Obtener siguiente página
+if (pagina1.hasMore) {
+  const pagina2 = await commet.usage.list({
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    eventType: 'api_call',
+    startDate: '2024-01-01',
+    endDate: '2024-01-31',
+    limit: 100,
+    cursor: pagina1.nextCursor
+  })
+}
+
+// Obtener todos los eventos de un período
+const todosLosEventos = []
+let cursor = undefined
+
+do {
+  const pagina = await commet.usage.list({ 
+    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    limit: 100, 
+    cursor 
+  })
+  todosLosEventos.push(...pagina.data)
+  cursor = pagina.nextCursor
+} while (pagina.hasMore)
 ```
+
+<Callout type="info">
+**Paginación**: Los listados de eventos de uso soportan paginación basada en cursor para recorrer historiales de eventos grandes de manera eficiente. Ver [Guía de paginación](/library/core/pagination) para más ejemplos.
+</Callout>
 
 ## Mejores Prácticas
 
