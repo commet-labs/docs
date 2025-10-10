@@ -1,0 +1,13 @@
+{
+  "title": "CLI",
+  "description": "Interfaz de línea de comandos para Commet",
+  "icon": "Terminal",
+  "pages": [
+    "overview",
+    "installation",
+    "commands",
+    "configuration",
+    "workflows"
+  ]
+}
+
