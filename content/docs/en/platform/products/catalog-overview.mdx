@@ -27,8 +27,6 @@ The billing engine automatically resolves: List → Variant → Agreement → Fi
 ## Why the catalog matters
 
 - **No more pricing chaos**: every price lives in one catalog instead of being hardcoded in custom deals.
-- **Clear approvals**: large discounts route through the right approval path automatically.
-- **Analytics that make sense**: track list price vs. customer price to measure discount adoption.
 - **Faster updates**: launch a new plan or tweak a price directly from the catalog—no code deploys required.
 - **Multi-currency support**: configure prices in different currencies for global customers.
 - **Quote generation**: use list prices as templates for customer quotes and proposals.
@@ -54,7 +52,7 @@ The billing engine automatically resolves: List → Variant → Agreement → Fi
 ### View products and prices
 
 1. Navigate to **Products** in the platform
-2. Browse your product catalog to see all available SKUs
+2. Browse your product catalog to see all products or create a new one
 3. Click on any product to view its list prices and price variants
 4. Review pricing by currency, segment, or customer
 
@@ -69,28 +67,20 @@ The billing engine automatically resolves: List → Variant → Agreement → Fi
    - Currency and amount
 4. Save the list price—it becomes available for quotes and billing schedules
 
-### Create a price variant
+### Use products in agreements
 
-1. Start with an existing list price
-2. Click **Create Variant** to customize for a specific customer or segment
-3. Apply adjustments:
+
+**For billing agreements:**
+1. Reference list prices or price variants in agreements
+2. Apply adjustments:
    - Discounts or markups
    - Modified unit amounts
    - Custom included units
    - Different currency
-4. Link to a customer (optional) or use for segment-based pricing
-
-### Use prices in quotes and billing
-
-**For customer quotes:**
-1. Select a list price as your starting point
-2. Apply any necessary adjustments via price variant
-3. Generate the quote with transparent pricing breakdown
-
-**For billing schedules:**
-1. Reference list prices or price variants in agreements
-2. The billing engine automatically calculates based on the pricing cascade
-3. Invoices show clear line items with pricing origin
+   - Add minimum commitments
+3. Automatically Commet creates a price variant for this customer.
+3. The billing engine automatically calculates based on the pricing cascade.
+4. Invoices show clear line items with pricing origin
 
 ## Example journeys
 
