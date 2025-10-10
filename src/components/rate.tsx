@@ -46,8 +46,10 @@ export function Rate({
   const [opinion, setOpinion] = useState<"good" | "bad" | null>(null);
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    setIsHydrated(true);
     const item = localStorage.getItem(`docs-feedback-${url}`);
 
     if (item === null) return;
@@ -84,6 +86,41 @@ export function Rate({
   }
 
   const activeOpinion = previous?.opinion ?? opinion;
+
+  // Prevent hydration mismatch by not rendering until client-side
+  if (!isHydrated) {
+    return (
+      <div className="border-y py-3">
+        <div className="flex flex-row items-center gap-2">
+          <p className="text-sm font-medium pe-2">How is this guide?</p>
+          <button
+            disabled
+            type="button"
+            className={cn(
+              rateButtonVariants({
+                active: false,
+              }),
+            )}
+          >
+            <ThumbsUp />
+            Good
+          </button>
+          <button
+            disabled
+            type="button"
+            className={cn(
+              rateButtonVariants({
+                active: false,
+              }),
+            )}
+          >
+            <ThumbsDown />
+            Bad
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Collapsible
