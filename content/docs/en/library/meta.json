@@ -3,5 +3,5 @@
   "description": "Learn how to use the Commet SDK",
   "icon": "Library",
   "root": true,
-  "pages": ["quickstart", "installation", "features", "core"]
+  "pages": ["quickstart", "installation", "features", "core", "cli"]
 }
