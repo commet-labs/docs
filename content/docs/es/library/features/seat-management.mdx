@@ -24,7 +24,7 @@ Incrementa la cantidad de asientos para un cliente:
 const result = await commet.seats.add({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'admin',
-  quantity: 5
+  count: 5
 })
 
 console.log(`Agregados ${result.data.quantity} asientos de admin`)
@@ -38,7 +38,7 @@ Disminuye la cantidad de asientos:
 const result = await commet.seats.remove({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'admin',
-  quantity: 2
+  count: 2
 })
 
 console.log(`Removidos ${result.data.quantity} asientos de admin`)
@@ -52,7 +52,7 @@ Establece cantidad precisa de asientos:
 const result = await commet.seats.set({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'admin',
-  quantity: 10
+  count: 10
 })
 
 console.log(`Asientos de admin establecidos a ${result.data.quantity}`)
@@ -69,14 +69,14 @@ Configuraciones comunes de asientos:
 await commet.seats.add({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'admin',
-  quantity: 2
+  count: 2
 })
 
 // Asientos de usuario regular  
 await commet.seats.add({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'user',
-  quantity: 25
+  count: 25
 })
 ```
 </Tab>
@@ -86,14 +86,14 @@ await commet.seats.add({
 await commet.seats.set({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'starter',
-  quantity: 5
+  count: 5
 })
 
 // Asientos de plan pro
 await commet.seats.set({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', 
   seatType: 'pro',
-  quantity: 15
+  count: 15
 })
 ```
 </Tab>
@@ -103,28 +103,24 @@ await commet.seats.set({
 await commet.seats.add({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'developer',
-  quantity: 8
+  count: 8
 })
 
 // Asientos de visualizador (solo lectura)
 await commet.seats.add({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'viewer', 
-  quantity: 20
+  count: 20
 })
 ```
 </Tab>
 <Tab value="Personalizado">
 ```typescript
-// Tipo de asiento personalizado con metadata
+// Tipo de asiento personalizado
 await commet.seats.add({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'api_access',
-  quantity: 3,
-  metadata: {
-    rate_limit: '1000_per_hour',
-    features: ['analytics', 'webhooks']
-  }
+  count: 3
 })
 ```
 </Tab>
@@ -135,15 +131,13 @@ await commet.seats.add({
 Actualiza múltiples tipos de asiento simultáneamente:
 
 ```typescript
-const updates = [
-  { seatType: 'admin', quantity: 3 },
-  { seatType: 'user', quantity: 50 },
-  { seatType: 'viewer', quantity: 100 }
-]
-
 const result = await commet.seats.bulkUpdate({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  updates
+  seats: {
+    admin: 3,
+    user: 50,
+    viewer: 100
+  }
 })
 
 console.log(`Actualizados ${result.data.length} tipos de asiento`)
@@ -151,26 +145,26 @@ console.log(`Actualizados ${result.data.length} tipos de asiento`)
 
 ## Balances de Asientos
 
-Obtén cantidades actuales de asientos:
-
-```typescript
-const balance = await commet.seats.getBalance({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2'
-})
-
-console.log('Asientos actuales:', balance.data)
-// Salida: { admin: 3, user: 50, viewer: 100 }
-```
-
 Obtén balance de tipo de asiento específico:
 
 ```typescript
-const adminSeats = await commet.seats.getBalance({
+const balance = await commet.seats.getBalance({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   seatType: 'admin'
 })
 
-console.log(`Asientos de admin: ${adminSeats.data.admin}`)
+console.log(`Asientos de admin: ${balance.data.current}`)
+```
+
+Obtén todos los balances de asientos para un cliente:
+
+```typescript
+const allBalances = await commet.seats.getAllBalances({
+  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2'
+})
+
+console.log('Asientos actuales:', allBalances.data)
+// Salida: { admin: { current: 3, asOf: '...' }, user: { current: 50, asOf: '...' } }
 ```
 
 ## Historial de Asientos
@@ -188,7 +182,7 @@ const pagina1 = await commet.seats.getHistory({
 })
 
 pagina1.data.forEach(event => {
-  console.log(`${event.timestamp}: ${event.action} ${event.quantity} asientos`)
+  console.log(`${event.ts}: ${event.eventType} ${event.quantity} asientos`)
 })
 
 // Obtener siguiente página si está disponible
@@ -204,6 +198,7 @@ if (pagina1.hasMore) {
 // Obtener todo el historial
 const todoElHistorial = []
 let cursor = undefined
+let hasMore = true
 
 do {
   const pagina = await commet.seats.getHistory({ 
@@ -214,55 +209,28 @@ do {
   })
   todoElHistorial.push(...pagina.data)
   cursor = pagina.nextCursor
-} while (pagina.hasMore)
+  hasMore = pagina.hasMore
+} while (hasMore)
 ```
 
 <Callout type="info">
 **Paginación**: El historial de asientos soporta paginación basada en cursor para recorrer registros de cambios de manera eficiente. Ver [Guía de paginación](/library/core/pagination) para más detalles.
 </Callout>
 
-## Opciones Avanzadas
+## Listar Todos los Eventos de Asientos
 
-### Fecha Efectiva
-
-Programa cambios de asientos para períodos de facturación futuros:
+Consulta eventos de asientos de todos los clientes:
 
 ```typescript
-await commet.seats.add({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+const events = await commet.seats.listEvents({
   seatType: 'admin',
-  quantity: 5,
-  effectiveDate: '2024-02-01T00:00:00Z'
+  eventType: 'add',
+  limit: 100,
+  cursor: 'token'
 })
-```
 
-### Control de Prorrateo
-
-Controla comportamiento de facturación a mitad de ciclo:
-
-```typescript
-await commet.seats.add({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  seatType: 'admin',
-  quantity: 5,
-  proration: 'full_cycle' // o 'daily', 'none'
-})
-```
-
-### Rastreo de Metadata
-
-Agrega contexto a cambios de asientos:
-
-```typescript
-await commet.seats.add({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  seatType: 'admin',
-  quantity: 5,
-  metadata: {
-    department: 'engineering',
-    approved_by: 'usr_manager123',
-    reason: 'team_expansion'
-  }
+events.data.forEach(event => {
+  console.log(`Cliente ${event.customerId}: ${event.eventType} ${event.quantity} asientos`)
 })
 ```
 
@@ -275,7 +243,7 @@ try {
   await commet.seats.remove({
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     seatType: 'admin',
-    quantity: 10
+    count: 10
   })
 } catch (error) {
   if (error.code === 'INSUFFICIENT_SEATS') {
@@ -310,30 +278,28 @@ Para múltiples actualizaciones de asientos, usa operaciones masivas:
 // ✅ Eficiente - una sola llamada API
 await commet.seats.bulkUpdate({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  updates: [
-    { seatType: 'admin', quantity: 3 },
-    { seatType: 'user', quantity: 50 }
-  ]
+  seats: {
+    admin: 3,
+    user: 50
+  }
 })
 
 // ❌ Ineficiente - múltiples llamadas API
-await commet.seats.set({ customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', seatType: 'admin', quantity: 3 })
-await commet.seats.set({ customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', seatType: 'user', quantity: 50 })
+await commet.seats.set({ customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', seatType: 'admin', count: 3 })
+await commet.seats.set({ customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', seatType: 'user', count: 50 })
 ```
 
-### Pista de Auditoría
+### Elección de Operación
 
-Siempre incluye metadata significativa:
+Elige la operación correcta para tu caso de uso:
 
 ```typescript
-await commet.seats.add({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  seatType: 'developer',
-  quantity: 3,
-  metadata: {
-    requested_by: 'usr_manager123',
-    department: 'engineering',
-    project: 'mobile_app_v2'
-  }
-})
+// Usa 'add' cuando incrementas
+await commet.seats.add({ customerId: 'cus_123', seatType: 'user', count: 5 })
+
+// Usa 'remove' cuando decrementas  
+await commet.seats.remove({ customerId: 'cus_123', seatType: 'user', count: 2 })
+
+// Usa 'set' cuando conoces el total exacto
+await commet.seats.set({ customerId: 'cus_123', seatType: 'user', count: 50 })
 ```

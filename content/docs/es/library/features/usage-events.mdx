@@ -19,10 +19,9 @@ Rastrea el uso del cliente para cálculos de facturación precisos. Envía event
 Envía un solo evento de uso:
 
 ```typescript
-const result = await commet.usage.create({
+const result = await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
 })
 
 console.log('Evento rastreado:', result.data.id)
@@ -35,53 +34,52 @@ Tipos de evento comunes para facturación:
 <Tabs items={['Llamadas API', 'Almacenamiento', 'Cómputo', 'Personalizado']}>
 <Tab value="Llamadas API">
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
-  metadata: {
-    endpoint: '/api/users',
-    method: 'GET'
-  }
+  properties: [
+    { property: 'endpoint', value: '/api/users' },
+    { property: 'method', value: 'GET' }
+  ]
 })
 ```
 </Tab>
 <Tab value="Almacenamiento">
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'storage_gb',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 2.5, // GB usados
-  metadata: {
-    region: 'us-east-1',
-    type: 'ssd'
-  }
+  properties: [
+    { property: 'quantity', value: '2.5' },
+    { property: 'region', value: 'us-east-1' },
+    { property: 'type', value: 'ssd' }
+  ]
 })
 ```
 </Tab>
 <Tab value="Cómputo">
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'compute_hours',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 0.25, // 15 minutos
-  metadata: {
-    instance_type: 't3.micro',
-    region: 'us-west-2'
-  }
+  properties: [
+    { property: 'quantity', value: '0.25' },
+    { property: 'instance_type', value: 't3.micro' },
+    { property: 'region', value: 'us-west-2' }
+  ]
 })
 ```
 </Tab>
 <Tab value="Personalizado">
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'email_sent',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 100,
-  metadata: {
-    campaign_id: 'camp_abc123',
-    template: 'welcome'
-  }
+  properties: [
+    { property: 'quantity', value: '100' },
+    { property: 'campaign_id', value: 'camp_abc123' },
+    { property: 'template', value: 'welcome' }
+  ]
 })
 ```
 </Tab>
@@ -92,23 +90,22 @@ await commet.usage.create({
 Envía múltiples eventos eficientemente:
 
 ```typescript
-const events = [
-  {
-    eventType: 'api_call',
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-    quantity: 1,
-    timestamp: '2024-01-15T10:00:00Z'
-  },
-  {
-    eventType: 'api_call', 
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-    quantity: 1,
-    timestamp: '2024-01-15T10:01:00Z'
-  }
-]
+const result = await commet.usage.events.createBatch({
+  events: [
+    {
+      eventType: 'api_call',
+      customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+      timestamp: '2024-01-15T10:00:00Z'
+    },
+    {
+      eventType: 'api_call', 
+      customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+      timestamp: '2024-01-15T10:01:00Z'
+    }
+  ]
+})
 
-const result = await commet.usage.createBatch(events)
-console.log(`Rastreados ${result.data.length} eventos`)
+console.log(`Rastreados ${result.data.successful.length} eventos`)
 ```
 
 ## Opciones Avanzadas
@@ -118,10 +115,9 @@ console.log(`Rastreados ${result.data.length} eventos`)
 Previene eventos duplicados con claves de idempotencia:
 
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
   idempotencyKey: 'unique-key-123'
 })
 ```
@@ -131,30 +127,28 @@ await commet.usage.create({
 Rellena uso histórico:
 
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
   timestamp: '2024-01-01T00:00:00Z'
 })
 ```
 
-### Metadata Rica
+### Properties Enriquecidas
 
 Agrega contexto para reportes y debugging:
 
 ```typescript
-await commet.usage.create({
+await commet.usage.events.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
-  metadata: {
-    user_id: 'usr_789',
-    endpoint: '/api/analytics',
-    response_time_ms: 150,
-    status_code: 200,
-    region: 'us-east-1'
-  }
+  properties: [
+    { property: 'user_id', value: 'usr_789' },
+    { property: 'endpoint', value: '/api/analytics' },
+    { property: 'response_time_ms', value: '150' },
+    { property: 'status_code', value: '200' },
+    { property: 'region', value: 'us-east-1' }
+  ]
 })
 ```
 
@@ -164,10 +158,9 @@ Maneja escenarios comunes:
 
 ```typescript
 try {
-  const result = await commet.usage.create({
+  const result = await commet.usage.events.create({
     eventType: 'api_call',
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-    quantity: 1,
   })
   
   console.log('Evento rastreado:', result.data.id)
@@ -188,7 +181,7 @@ Recupera historial de uso para análisis con paginación:
 
 ```typescript
 // Primera página
-const pagina1 = await commet.usage.list({
+const pagina1 = await commet.usage.events.list({
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   eventType: 'api_call',
   startDate: '2024-01-01',
@@ -201,7 +194,7 @@ console.log(`Más páginas: ${pagina1.hasMore}`)
 
 // Obtener siguiente página
 if (pagina1.hasMore) {
-  const pagina2 = await commet.usage.list({
+  const pagina2 = await commet.usage.events.list({
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     eventType: 'api_call',
     startDate: '2024-01-01',
@@ -216,7 +209,7 @@ const todosLosEventos = []
 let cursor = undefined
 
 do {
-  const pagina = await commet.usage.list({ 
+  const pagina = await commet.usage.events.list({ 
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     limit: 100, 
     cursor 
@@ -244,13 +237,12 @@ const eventBuffer = []
 eventBuffer.push({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
   timestamp: new Date().toISOString()
 })
 
 // Vaciar buffer cada 10 segundos o 100 eventos
 if (eventBuffer.length >= 100) {
-  await commet.usage.createBatch(eventBuffer)
+  await commet.usage.events.createBatch({ events: eventBuffer })
   eventBuffer.length = 0
 }
 ```
@@ -267,23 +259,20 @@ Usa tipos de evento consistentes y descriptivos:
 'event1', 'usage', 'thing', 'api'
 ```
 
-### Estructura de Metadata
+### Estructura de Properties
 
-Mantén metadata plana y buscable:
+Mantén properties planas y buscables:
 
 ```typescript
 // ✅ Bueno
-metadata: {
-  endpoint: '/api/users',
-  method: 'GET',
-  user_id: 'usr_123'
-}
+properties: [
+  { property: 'endpoint', value: '/api/users' },
+  { property: 'method', value: 'GET' },
+  { property: 'user_id', value: 'usr_123' }
+]
 
-// ❌ Evita objetos anidados
-metadata: {
-  request: {
-    endpoint: '/api/users',
-    details: { method: 'GET' }
-  }
-}
+// ❌ Evita - objetos anidados no soportados
+properties: [
+  { property: 'request', value: JSON.stringify({ endpoint: '/api/users', method: 'GET' }) }
+]
 ```
