@@ -6,7 +6,7 @@ export function Steps({ children }: { children: ReactNode }) {
 
 Steps.Step = function Step({
   children,
-  title
+  title,
 }: {
   children: ReactNode;
   title?: string;
@@ -21,7 +21,7 @@ Steps.Step = function Step({
 
 export function Step({
   children,
-  title
+  title,
 }: {
   children: ReactNode;
   title?: string;

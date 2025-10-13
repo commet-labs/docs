@@ -19,12 +19,27 @@ Rastrea el uso del cliente para cálculos de facturación precisos. Envía event
 Envía un solo evento de uso:
 
 ```typescript
-const result = await commet.usage.events.create({
+const result = await commet.usage.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
 })
 
 console.log('Evento rastreado:', result.data.id)
+```
+
+<Callout type="info">
+**Identificación de Cliente**: Usa `customerId` (generado por Commet) o `externalId` (tu ID interno) para identificar clientes.
+</Callout>
+
+### Usando IDs Externos
+
+Referencia clientes con tus propios IDs:
+
+```typescript
+const result = await commet.usage.create({
+  eventType: 'api_call',
+  externalId: 'stripe_cus_abc123', // Tu ID interno de cliente
+})
 ```
 
 ## Tipos de Evento
@@ -34,7 +49,7 @@ Tipos de evento comunes para facturación:
 <Tabs items={['Llamadas API', 'Almacenamiento', 'Cómputo', 'Personalizado']}>
 <Tab value="Llamadas API">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   properties: [
@@ -46,9 +61,9 @@ await commet.usage.events.create({
 </Tab>
 <Tab value="Almacenamiento">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'storage_gb',
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz', // Usando ID externo
   properties: [
     { property: 'quantity', value: '2.5' },
     { property: 'region', value: 'us-east-1' },
@@ -59,7 +74,7 @@ await commet.usage.events.create({
 </Tab>
 <Tab value="Cómputo">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'compute_hours',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   properties: [
@@ -72,7 +87,7 @@ await commet.usage.events.create({
 </Tab>
 <Tab value="Personalizado">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'email_sent',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   properties: [
@@ -90,7 +105,7 @@ await commet.usage.events.create({
 Envía múltiples eventos eficientemente:
 
 ```typescript
-const result = await commet.usage.events.createBatch({
+const result = await commet.usage.createBatch({
   events: [
     {
       eventType: 'api_call',
@@ -99,7 +114,7 @@ const result = await commet.usage.events.createBatch({
     },
     {
       eventType: 'api_call', 
-      customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+      externalId: 'stripe_cus_abc', // Mezcla customerId y externalId
       timestamp: '2024-01-15T10:01:00Z'
     }
   ]
@@ -158,9 +173,9 @@ Maneja escenarios comunes:
 
 ```typescript
 try {
-  const result = await commet.usage.events.create({
+  const result = await commet.usage.create({
     eventType: 'api_call',
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    externalId: 'stripe_cus_xyz',
   })
   
   console.log('Evento rastreado:', result.data.id)
@@ -180,12 +195,10 @@ try {
 Recupera historial de uso para análisis con paginación:
 
 ```typescript
-// Primera página
-const pagina1 = await commet.usage.events.list({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+// Filtrar por customerId o externalId
+const pagina1 = await commet.usage.list({
+  externalId: 'stripe_cus_xyz', // O usa customerId
   eventType: 'api_call',
-  startDate: '2024-01-01',
-  endDate: '2024-01-31',
   limit: 100
 })
 
@@ -194,22 +207,20 @@ console.log(`Más páginas: ${pagina1.hasMore}`)
 
 // Obtener siguiente página
 if (pagina1.hasMore) {
-  const pagina2 = await commet.usage.events.list({
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  const pagina2 = await commet.usage.list({
+    externalId: 'stripe_cus_xyz',
     eventType: 'api_call',
-    startDate: '2024-01-01',
-    endDate: '2024-01-31',
     limit: 100,
     cursor: pagina1.nextCursor
   })
 }
 
-// Obtener todos los eventos de un período
+// Obtener todos los eventos de un cliente
 const todosLosEventos = []
 let cursor = undefined
 
 do {
-  const pagina = await commet.usage.events.list({ 
+  const pagina = await commet.usage.list({ 
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     limit: 100, 
     cursor 
@@ -233,16 +244,16 @@ Para aplicaciones enviando >1000 eventos/minuto:
 // Buffer de eventos local
 const eventBuffer = []
 
-// Agregar al buffer
+// Agregar al buffer con externalId
 eventBuffer.push({
   eventType: 'api_call',
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz',
   timestamp: new Date().toISOString()
 })
 
 // Vaciar buffer cada 10 segundos o 100 eventos
 if (eventBuffer.length >= 100) {
-  await commet.usage.events.createBatch({ events: eventBuffer })
+  await commet.usage.createBatch({ events: eventBuffer })
   eventBuffer.length = 0
 }
 ```

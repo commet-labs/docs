@@ -19,12 +19,27 @@ Track customer usage for accurate billing calculations. Send events in real-time
 Send a single usage event:
 
 ```typescript
-const result = await commet.usage.events.create({
+const result = await commet.usage.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
 })
 
 console.log('Event tracked:', result.data.id)
+```
+
+<Callout type="info">
+**Customer Identification**: Use either `customerId` (Commet-generated) or `externalId` (your own system ID) to identify customers.
+</Callout>
+
+### Using External IDs
+
+Reference customers with your own IDs:
+
+```typescript
+const result = await commet.usage.create({
+  eventType: 'api_call',
+  externalId: 'stripe_cus_abc123', // Your internal customer ID
+})
 ```
 
 ## Event Types
@@ -34,7 +49,7 @@ Common event types for billing:
 <Tabs items={['API Calls', 'Storage', 'Compute', 'Custom']}>
 <Tab value="API Calls">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'api_call',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   properties: [
@@ -46,9 +61,9 @@ await commet.usage.events.create({
 </Tab>
 <Tab value="Storage">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'storage_gb',
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz', // Using external ID
   properties: [
     { property: 'quantity', value: '2.5' },
     { property: 'region', value: 'us-east-1' },
@@ -59,7 +74,7 @@ await commet.usage.events.create({
 </Tab>
 <Tab value="Compute">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'compute_hours',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   properties: [
@@ -72,7 +87,7 @@ await commet.usage.events.create({
 </Tab>
 <Tab value="Custom">
 ```typescript
-await commet.usage.events.create({
+await commet.usage.create({
   eventType: 'email_sent',
   customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
   properties: [
@@ -90,7 +105,7 @@ await commet.usage.events.create({
 Send multiple events efficiently:
 
 ```typescript
-const result = await commet.usage.events.createBatch({
+const result = await commet.usage.createBatch({
   events: [
     {
       eventType: 'api_call',
@@ -99,7 +114,7 @@ const result = await commet.usage.events.createBatch({
     },
     {
       eventType: 'api_call', 
-      customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+      externalId: 'stripe_cus_abc', // Mix customerId and externalId
       timestamp: '2024-01-15T10:01:00Z'
     }
   ]
@@ -158,9 +173,9 @@ Handle common scenarios:
 
 ```typescript
 try {
-  const result = await commet.usage.events.create({
+  const result = await commet.usage.create({
     eventType: 'api_call',
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+    externalId: 'stripe_cus_xyz',
   })
   
   console.log('Event tracked:', result.data.id)
@@ -180,12 +195,10 @@ try {
 Retrieve usage history for analysis with pagination:
 
 ```typescript
-// First page
-const page1 = await commet.usage.events.list({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+// Filter by customerId or externalId
+const page1 = await commet.usage.list({
+  externalId: 'stripe_cus_xyz', // Or use customerId
   eventType: 'api_call',
-  startDate: '2024-01-01',
-  endDate: '2024-01-31',
   limit: 100
 })
 
@@ -194,22 +207,20 @@ console.log(`More pages: ${page1.hasMore}`)
 
 // Get next page
 if (page1.hasMore) {
-  const page2 = await commet.usage.events.list({
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  const page2 = await commet.usage.list({
+    externalId: 'stripe_cus_xyz',
     eventType: 'api_call',
-    startDate: '2024-01-01',
-    endDate: '2024-01-31',
     limit: 100,
     cursor: page1.nextCursor
   })
 }
 
-// Fetch all events for a period
+// Fetch all events for a customer
 const allEvents = []
 let cursor = undefined
 
 do {
-  const page = await commet.usage.events.list({ 
+  const page = await commet.usage.list({ 
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     limit: 100, 
     cursor 
@@ -233,16 +244,16 @@ For applications sending >1000 events/minute:
 // Buffer events locally
 const eventBuffer = []
 
-// Add to buffer
+// Add to buffer with externalId
 eventBuffer.push({
   eventType: 'api_call',
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz',
   timestamp: new Date().toISOString()
 })
 
 // Flush buffer every 10 seconds or 100 events
 if (eventBuffer.length >= 100) {
-  await commet.usage.events.createBatch({ events: eventBuffer })
+  await commet.usage.createBatch({ events: eventBuffer })
   eventBuffer.length = 0
 }
 ```

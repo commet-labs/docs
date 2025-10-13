@@ -13,7 +13,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 Pon tu sistema de facturación en funcionamiento en menos de 5 minutos.
 
 <Callout type="info">
-**Prerrequisitos:** Necesitarás una cuenta de Commet y una clave API. [Regístrate aquí](https://demo.commet.co) si no tienes una.
+**Prerrequisitos:** Node.js 18+ y una cuenta de Commet. [Regístrate aquí](https://sandbox.commet.co) si es necesario.
 </Callout>
 
 <Steps>
@@ -24,17 +24,17 @@ Pon tu sistema de facturación en funcionamiento en menos de 5 minutos.
 <Tabs items={['npm', 'pnpm', 'yarn']}>
 <Tab value="npm">
 ```bash
-npm install commet
+npm install @commet/node
 ```
 </Tab>
 <Tab value="pnpm">
 ```bash
-pnpm add commet
+pnpm add @commet/node
 ```
 </Tab>
 <Tab value="yarn">
 ```bash
-yarn add commet
+yarn add @commet/node
 ```
 </Tab>
 </Tabs>
@@ -43,38 +43,57 @@ yarn add commet
 
 <Step>
 
-## Inicializa el cliente
+## Vincula tu proyecto
 
-Crea tu cliente Commet con tu clave API:
+Usa el CLI para conectar tu proyecto y sincronizar tipos:
 
-```typescript
-import { Commet } from 'commet'
-
-const commet = new Commet({
-  apiKey: 'tu-clave-api',
-  environment: 'sandbox' // Por defecto - seguro para pruebas
-})
+```bash
+npx commet link
 ```
 
-<Callout type="warn">
-**Mantén tu clave API segura:** Nunca expongas tu clave API en código del lado del cliente. Usa variables de entorno.
+Selecciona tu organización y proyecto. El CLI genera tipos de TypeScript para tus tipos de evento y tipos de asiento automáticamente.
+
+<Callout type="info">
+**Seguridad de Tipos:** El CLI crea wrappers tipados para tus eventos de facturación, previniendo errores en tiempo de ejecución.
 </Callout>
 
 </Step>
 
 <Step>
 
-## Envía tu primer evento de uso
+## Inicializa el cliente
 
-Rastrea el uso para facturación en una línea:
+Crea tu cliente Commet con variables de entorno:
 
 ```typescript
-// Rastrea llamadas API para facturación basada en uso
+import { Commet } from '@commet/node'
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+
+<Callout type="warn">
+**Seguridad:** Guarda tu clave API en `.env` y nunca la commitees. El CLI agrega `.commet/` a `.gitignore` automáticamente.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Rastrea eventos de uso
+
+Envía datos de uso con métodos type-safe:
+
+```typescript
+// Rastrea llamadas API (type-safe después de CLI link)
 await commet.usage.create({
   eventType: 'api_call',
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
-  timestamp: new Date().toISOString(),
+  customerId: 'cus_xyz', // O usa externalId
+  properties: [
+    { property: 'endpoint', value: '/users' },
+    { property: 'method', value: 'GET' }
+  ]
 })
 ```
 
@@ -82,29 +101,27 @@ await commet.usage.create({
 
 <Step>
 
-## Gestiona licencias de asientos
+## Gestiona asientos
 
-Agrega o remueve asientos para facturación por suscripción:
+Agrega, remueve o establece cantidades de asientos:
 
 ```typescript
-// Agregar 5 asientos de admin
+// Agregar asientos
 await commet.seats.add({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_abc', // Usa tus propios IDs
   seatType: 'admin',
-  quantity: 5,
+  count: 5
 })
 
-// Remover 2 asientos
-await commet.seats.remove({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', 
+// Establecer cantidad exacta
+await commet.seats.set({
+  customerId: 'cus_xyz',
   seatType: 'admin',
-  quantity: 2,
+  count: 10
 })
 ```
 
 </Step>
 </Steps>
 
-## ¿Necesitas ayuda?
-
-- 📧 [Contactar Soporte](mailto:support@commet.co)
+**¿Necesitas ayuda?** [support@commet.co](mailto:support@commet.co)

@@ -10,10 +10,10 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 # Quick Start
 
-Get your billing system up and running in under 5 minutes.
+Get your billing system running in under 5 minutes.
 
 <Callout type="info">
-**Prerequisites:** You'll need a Commet account and API key. [Sign up here](https://sandbox.commet.co) if you don't have one.
+**Prerequisites:** Node.js 18+ and a Commet account. [Sign up here](https://sandbox.commet.co) if needed.
 </Callout>
 
 <Steps>
@@ -24,17 +24,17 @@ Get your billing system up and running in under 5 minutes.
 <Tabs items={['npm', 'pnpm', 'yarn']}>
 <Tab value="npm">
 ```bash
-npm install commet
+npm install @commet/node
 ```
 </Tab>
 <Tab value="pnpm">
 ```bash
-pnpm add commet
+pnpm add @commet/node
 ```
 </Tab>
 <Tab value="yarn">
 ```bash
-yarn add commet
+yarn add @commet/node
 ```
 </Tab>
 </Tabs>
@@ -43,38 +43,57 @@ yarn add commet
 
 <Step>
 
-## Initialize the client
+## Link your project
 
-Create your Commet client with your API key:
+Use the CLI to connect your project and sync types:
 
-```typescript
-import { Commet } from 'commet'
-
-const commet = new Commet({
-  apiKey: 'your-api-key',
-  environment: 'sandbox' // Default - safe for testing
-})
+```bash
+npx commet link
 ```
 
-<Callout type="warn">
-**Keep your API key secure:** Never expose your API key in client-side code. Use environment variables.
+Select your organization and project. The CLI generates TypeScript types for your event types and seat types automatically.
+
+<Callout type="info">
+**Type Safety:** The CLI creates typed wrappers for your billing events, preventing runtime errors.
 </Callout>
 
 </Step>
 
 <Step>
 
-## Send your first usage event
+## Initialize the client
 
-Track usage for billing in one line:
+Create your Commet client with environment variables:
 
 ```typescript
-// Track API calls for usage-based billing
+import { Commet } from '@commet/node'
+
+const commet = new Commet({
+  apiKey: process.env.COMMET_API_KEY!
+})
+```
+
+<Callout type="warn">
+**Security:** Store your API key in `.env` and never commit it. The CLI adds `.commet/` to `.gitignore` automatically.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Track usage events
+
+Send usage data with type-safe methods:
+
+```typescript
+// Track API calls (type-safe after CLI link)
 await commet.usage.create({
   eventType: 'api_call',
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
-  quantity: 1,
-  timestamp: new Date().toISOString(),
+  customerId: 'cus_xyz', // Or use externalId
+  properties: [
+    { property: 'endpoint', value: '/users' },
+    { property: 'method', value: 'GET' }
+  ]
 })
 ```
 
@@ -82,29 +101,27 @@ await commet.usage.create({
 
 <Step>
 
-## Manage seat licenses
+## Manage seats
 
-Add or remove seats for subscription billing:
+Add, remove, or set seat counts:
 
 ```typescript
-// Add 5 admin seats
+// Add seats
 await commet.seats.add({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_abc', // Use your own IDs
   seatType: 'admin',
-  quantity: 5,
+  count: 5
 })
 
-// Remove 2 seats
-await commet.seats.remove({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2', 
+// Set exact count
+await commet.seats.set({
+  customerId: 'cus_xyz',
   seatType: 'admin',
-  quantity: 2,
+  count: 10
 })
 ```
 
 </Step>
 </Steps>
 
-## Need help?
-
-- 📧 [Contact Support](mailto:support@commet.co)
+**Need help?** [support@commet.co](mailto:support@commet.co)

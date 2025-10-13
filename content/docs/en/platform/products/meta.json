@@ -2,5 +2,10 @@
   "title": "Products",
   "description": "Everything go-to-market teams need to run pricing in Commet",
   "icon": "Box",
-  "pages": ["catalog-overview", "business-logic", "usage-based-pricing", "seat-based-pricing"]
+  "pages": [
+    "catalog-overview",
+    "business-logic",
+    "usage-based-pricing",
+    "seat-based-pricing"
+  ]
 }

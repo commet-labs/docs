@@ -16,6 +16,10 @@ Manage customer seats for subscription billing. Add, remove, or set seat quantit
 
 ## Basic Operations
 
+<Callout type="info">
+**Customer Identification**: Use either `customerId` (Commet-generated) or `externalId` (your own system ID) to identify customers.
+</Callout>
+
 ### Add Seats
 
 Increase seat count for a customer:
@@ -28,6 +32,16 @@ const result = await commet.seats.add({
 })
 
 console.log(`Added ${result.data.quantity} admin seats`)
+```
+
+Using external IDs:
+
+```typescript
+const result = await commet.seats.add({
+  externalId: 'stripe_cus_abc123', // Your internal customer ID
+  seatType: 'admin',
+  count: 5
+})
 ```
 
 ### Remove Seats
@@ -132,7 +146,7 @@ Update multiple seat types simultaneously:
 
 ```typescript
 const result = await commet.seats.bulkUpdate({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz', // Or use customerId
   seats: {
     admin: 3,
     user: 50,
@@ -149,7 +163,7 @@ Get specific seat type balance:
 
 ```typescript
 const balance = await commet.seats.getBalance({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz', // Or use customerId
   seatType: 'admin'
 })
 
@@ -172,12 +186,10 @@ console.log('Current seats:', allBalances.data)
 Track seat changes over time with pagination:
 
 ```typescript
-// First page
-const page1 = await commet.seats.getHistory({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+// Filter by customerId or externalId
+const page1 = await commet.seats.listEvents({
+  externalId: 'stripe_cus_xyz',
   seatType: 'admin',
-  startDate: '2024-01-01',
-  endDate: '2024-01-31',
   limit: 50
 })
 
@@ -187,8 +199,8 @@ page1.data.forEach(event => {
 
 // Get next page if available
 if (page1.hasMore) {
-  const page2 = await commet.seats.getHistory({
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  const page2 = await commet.seats.listEvents({
+    externalId: 'stripe_cus_xyz',
     seatType: 'admin',
     limit: 50,
     cursor: page1.nextCursor
@@ -201,7 +213,7 @@ let cursor = undefined
 let hasMore = true
 
 do {
-  const page = await commet.seats.getHistory({ 
+  const page = await commet.seats.listEvents({ 
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     seatType: 'admin',
     limit: 100, 

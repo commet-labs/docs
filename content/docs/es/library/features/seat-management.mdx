@@ -16,6 +16,10 @@ Gestiona asientos de clientes para facturación por suscripción. Agrega, remuev
 
 ## Operaciones Básicas
 
+<Callout type="info">
+**Identificación de Cliente**: Usa `customerId` (generado por Commet) o `externalId` (tu ID interno) para identificar clientes.
+</Callout>
+
 ### Agregar Asientos
 
 Incrementa la cantidad de asientos para un cliente:
@@ -28,6 +32,16 @@ const result = await commet.seats.add({
 })
 
 console.log(`Agregados ${result.data.quantity} asientos de admin`)
+```
+
+Usando IDs externos:
+
+```typescript
+const result = await commet.seats.add({
+  externalId: 'stripe_cus_abc123', // Tu ID interno de cliente
+  seatType: 'admin',
+  count: 5
+})
 ```
 
 ### Remover Asientos
@@ -132,7 +146,7 @@ Actualiza múltiples tipos de asiento simultáneamente:
 
 ```typescript
 const result = await commet.seats.bulkUpdate({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz', // O usa customerId
   seats: {
     admin: 3,
     user: 50,
@@ -149,7 +163,7 @@ Obtén balance de tipo de asiento específico:
 
 ```typescript
 const balance = await commet.seats.getBalance({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  externalId: 'stripe_cus_xyz', // O usa customerId
   seatType: 'admin'
 })
 
@@ -172,12 +186,10 @@ console.log('Asientos actuales:', allBalances.data)
 Rastrea cambios de asientos a lo largo del tiempo con paginación:
 
 ```typescript
-// Primera página
-const pagina1 = await commet.seats.getHistory({
-  customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+// Filtrar por customerId o externalId
+const pagina1 = await commet.seats.listEvents({
+  externalId: 'stripe_cus_xyz',
   seatType: 'admin',
-  startDate: '2024-01-01',
-  endDate: '2024-01-31',
   limit: 50
 })
 
@@ -187,8 +199,8 @@ pagina1.data.forEach(event => {
 
 // Obtener siguiente página si está disponible
 if (pagina1.hasMore) {
-  const pagina2 = await commet.seats.getHistory({
-    customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
+  const pagina2 = await commet.seats.listEvents({
+    externalId: 'stripe_cus_xyz',
     seatType: 'admin',
     limit: 50,
     cursor: pagina1.nextCursor
@@ -201,7 +213,7 @@ let cursor = undefined
 let hasMore = true
 
 do {
-  const pagina = await commet.seats.getHistory({ 
+  const pagina = await commet.seats.listEvents({ 
     customerId: 'cus_A1b2C3d4E5f6G7h8I9j0K1l2',
     seatType: 'admin',
     limit: 100, 
