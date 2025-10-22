@@ -1,21 +1,21 @@
 ---
 title: Onboarding
-description: In this guide you'll find the steps to follow if it's your first time accessing Commet and you want to test its core functionalities.
-
+description: A quick guide to get started with Commet
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout'
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
+In this guide you'll find the steps to follow if it's your first time accessing Commet and you want to test its core functionalities.
 
 <Callout type="info">
-Remember that to start operating with Commet in a production environment, you'll need to speak with our team to complete the legal onboarding and select a plan from our pricing. Our team will help you throughout the entire process.
+Remember that to start operating with Commet in a real way, you'll need to speak with our team to complete the onboarding.
 </Callout>
 
 <Steps>
 <Step>
 
-### 1. Create an Account
+### 1. Create an account
 
 Go to https://sandbox.commet.co. If it's your first time accessing, you'll need to complete some basic information about your company.
 
@@ -23,75 +23,50 @@ Go to https://sandbox.commet.co. If it's your first time accessing, you'll need 
 
 <Step>
 
-### 2. Create Your Tax Rates
+### 2. Create your products
 
-All Commet products must have a product type and an associated tax rate. This allows us to calculate taxes directly. You'll need to create at least one product category and one tax rate.
+From the products tab, create your products, whether they're one-time, recurring, fixed, or tied to some metric created previously.
 
 <Callout type="info">
-Don't worry, you can always mark your customer as exempt to avoid calculating taxes, and they won't appear on the invoice.
+Maybe your products are consumption-based or seat-based. You can create these metrics right there. Later, you'll be able to send events via API to test with real data.
 </Callout>
 
 </Step>
 
 <Step>
 
-### 3. Create or Import a Customer
+### 3. Create a subscription
 
-As a first step, you'll need to create a customer from the Customer tab. There you'll define their billing information, currency, and conditions.
-
-</Step>
-
-<Step>
-
-### 4. Create events types and metrics
-
-You need to create event types or seat types, which define the kinds of usage you want to track. These events must then be grouped into metrics, as metrics are what get associated with products later in the process.
+A subscription is where all the conditions agreed upon with your customer come together. Each one can have different phases and will determine What and How we will charge our customers.
 
 <Callout type="info">
-Later, you'll be able to stream real events via API to test with real data, but for this onboarding you can leave this section empty—sandbox mode lets you simulate everything with test data. The goal of this onboarding is to show you the full flow, all the way to generating a final invoice.
+Commet is also designed to be the source of truth for your customers. Therefore, if you don't have customers created, you'll need to create one at that moment to associate that subscription.
 </Callout>
 
 </Step>
 
 <Step>
 
-### 5. Create Your Products
+### 4. Simulation
 
-From the Products tab, create your products, whether they're one-time, recurring, fixed, or tied to some metric created previously.
-
-</Step>
-
-
-<Step>
-
-### 6. Create an Agreement
-
-Agreements are where all the conditions agreed upon with your customer come together. Each agreement can have different phases and will determine What and How we will charge our customers.
-
-</Step>
-
-<Step>
-
-### 7. Invoice Generation
-
-At this stage, you'll be able to simulate invoices to see exactly how an invoice for this agreement would look. When the billing date set in the agreement arrives, invoices will be generated using real data, if available.
+At this stage, you'll be able to simulate your subscription to see exactly how it would look. When the billing date set in the subscription arrives, Commet will send the invoice with the usage detail and charge the customer.
 
 <Callout type="warning">
-You won't be able to send or download them if you don't have an account activated by our team.
+In sandbox you won't be able to create a real subscription.
 </Callout>
 
 </Step>
 
 <Step>
 
-### 8. Next Steps
+### 5. Next steps
 
 At this point, you have two options:
 
-**Option A: Get a Production Account**
+**Option A: Get a production account**
 [Book a slot with our team](https://cal.com/guido-irigoyen/onboarding-meeting) so we can help you find the best plan for you. Our team will handle the migration of all your data so you can start operating with Commet in production as soon as possible.
 
-**Option B: Test with Real Data in Sandbox**
+**Option B: Test with real data in Sandbox**
 Go to the API Keys section and start integrating the SDK to try Commet sandbox with real data. Check out our [Quick Start guide](/library/quickstart) to get up and running in under 5 minutes. This allows you to test the full functionality using your own data before moving to production.
 
 </Step>
