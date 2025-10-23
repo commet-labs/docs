@@ -6,12 +6,10 @@ description: Una guía rápida para comenzar con Commet
 import { Callout } from 'fumadocs-ui/components/callout'
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-# Onboarding
-
 En esta guía encontrarás los pasos a seguir si es la primera vez que ingresas a Commet y deseas probar sus funcionalidades base.
 
 <Callout type="info">
-Recuerda que para empezar a operar con Commet de manera real, deberás hablar con nuestro equipo para poder completar el onboarding legal y seleccionar un plan de nuestro pricing. Nuestro equipo te ayudará en todo el proceso.
+Recuerda que para empezar a operar con Commet de manera real, deberás hablar con nuestro equipo para poder completar el onboarding.
 </Callout>
 
 <Steps>
@@ -25,67 +23,43 @@ Ve a https://sandbox.commet.co. Si es la primera vez que accedes, tendrás que c
 
 <Step>
 
-### 2. Crea tus tasas de impuestos
-
-Todos los productos de Commet deben tener un tipo de producto y una tasa de impuestos asociada. Esto nos permite calcular los impuestos directamente. Tendrás que crear al menos una categoría de producto y una tasa de impuestos.
-
-<Callout type="info">
-No te preocupes, siempre puedes marcar a tu cliente como exento para evitar calcular impuestos, y estos no aparecerán en la factura.
-</Callout>
-
-</Step>
-
-<Step>
-
-### 3. Crea o importa un cliente
-
-Como primer paso, necesitarás crear un cliente desde la pestaña Customer. Allí definirás sus datos de facturación, moneda y condiciones.
-
-</Step>
-
-<Step>
-
-### 4. Crea tipos de eventos y métricas
-
-Necesitas crear tipos de eventos o tipos de asientos, que definen los tipos de uso que quieres rastrear. Estos eventos deben agruparse luego en métricas, ya que las métricas son lo que se asocia con los productos más adelante en el proceso.
-
-<Callout type="info">
-Más adelante, podrás enviar eventos vía API para probar con datos reales, pero para este onboarding puedes dejar esta sección vacía—el modo sandbox te permite simular todo con datos de prueba. El objetivo de este onboarding es mostrarte el flujo completo, hasta generar una factura final.
-</Callout>
-
-</Step>
-
-<Step>
-
-### 5. Crea tus productos
+### 2. Crea tus productos
 
 Desde la pestaña de productos, crea tus productos, ya sean de una vez, recurrentes, fijos o vinculados a alguna métrica creada anteriormente.
 
-</Step>
-
-<Step>
-
-### 6. Crea un Agreement
-
-Un Agreements es donde se reúnen todas las condiciones acordadas con tu cliente. Cada agreement puede tener diferentes fases y determinará Qué y Cómo cobraremos a nuestros clientes.
-
-</Step>
-
-<Step>
-
-### 7. Generación de facturas
-
-En esta etapa, podrás simular facturas para ver exactamente cómo se vería una factura para este acuerdo. Cuando llegue la fecha de facturación establecida en el acuerdo, se generarán facturas usando datos reales, si están disponibles.
-
-<Callout type="warning">
-No podrás enviarlos ni descargarlos si no tienes una cuenta activada por nuestro equipo.
+<Callout type="info">
+Tal vez tus productos sean por consumo o en base a seats. Podrás crear estas métricas ahí mismo. Más adelante, podrás enviar eventos vía API para probar con datos reales.
 </Callout>
 
 </Step>
 
 <Step>
 
-### 8. Próximos pasos
+### 3. Crea una suscripción
+
+Una suscripción es donde se reúnen todas las condiciones acordadas con tu cliente. Cada una puede tener diferentes fases y determinará Qué y Cómo cobraremos a nuestros clientes.
+
+<Callout type="info">
+Commet también está pensado para ser el centro de la verdad de tus clientes. Por ende si no tienes clientes creados tendrás que crear uno en ese momento para asociar dicha suscripción.
+</Callout>
+
+</Step>
+
+<Step>
+
+### 4. Simulación
+
+En esta etapa, podrás simular tu suscripción para ver exactamente cómo se vería. Cuando llegue la fecha de facturación establecida en la suscripción, Commet enviara el invocice con el detalle de uso y cobrará al cliente.
+
+<Callout type="warning">
+En sandbox no podrás crear una suscripción real.
+</Callout>
+
+</Step>
+
+<Step>
+
+### 5. Próximos pasos
 
 En este punto, tienes dos opciones:
 
