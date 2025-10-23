@@ -7,7 +7,7 @@
     "dev": "next dev --turbo --port 3011",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
-    "clean": "rm -rf .turbo node_modules .next",
+    "clean": "rm -rf .turbo node_modules .next .source",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check . --write"
