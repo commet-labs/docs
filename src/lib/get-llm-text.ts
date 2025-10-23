@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { source } from "@/lib/source";
 import type { InferPageType } from "fumadocs-core/source";
 import { remarkInclude } from "fumadocs-mdx/config";
@@ -12,9 +13,11 @@ const processor = remark()
   .use(remarkGfm);
 
 export async function getLLMText(page: InferPageType<typeof source>) {
+  const fileContent = readFileSync(page.absolutePath, "utf-8");
+
   const processed = await processor.process({
-    path: page.data._file.absolutePath,
-    value: page.data.content,
+    path: page.absolutePath,
+    value: fileContent,
   });
 
   // note: it doesn't escape frontmatter, it's up to you.
