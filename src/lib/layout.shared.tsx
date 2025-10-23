@@ -16,24 +16,34 @@ export function baseOptions(locale: string): BaseLayoutProps {
       title: (
         <>
           <svg
-            width="20"
-            height="32"
-            viewBox="150 100 200 300"
-            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 500 500"
             className="shrink-0"
           >
-            <g transform="translate(0,500) scale(0.1,-0.1)" fill="currentColor">
-              <path
-                d="M2453 3878 c-37 -42 -806 -1082 -807 -1092 -2 -19 1168 -1277 1175
-              -1263 4 6 145 263 313 570 168 307 306 564 306 572 0 13 -843 1157 -893 1213
-              -12 12 -32 22 -47 22 -15 0 -36 -10 -47 -22z"
-              />
-              <path
-                d="M1648 2490 c17 -30 209 -379 426 -775 374 -682 397 -720 424 -723 28
-              -3 33 3 126 173 54 97 95 182 93 188 -5 11 -1003 1096 -1069 1162 l-30 30 30
-              -55z"
-              />
-            </g>
+            <rect
+              width="500"
+              height="500"
+              className="fill-white dark:fill-black"
+            />
+            <path
+              d="M0 0H500V500H0V0Z"
+              className="fill-white dark:fill-black"
+            />
+            <path
+              d="M250 71L356.521 255.5H143.479L250 71Z"
+              className="fill-black dark:fill-white"
+            />
+            <path
+              d="M250 440L356.521 255.5H143.479L250 440Z"
+              className="fill-black dark:fill-white"
+            />
+            <rect
+              width="253.649"
+              height="17.0192"
+              transform="matrix(0.718749 0.695269 -0.64697 0.762515 143.458 243.867)"
+              className="fill-white dark:fill-black"
+            />
           </svg>
           Commet
         </>
